@@ -1,0 +1,101 @@
+#######################################
+# Syntax Coloring Map For DotMG
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DotMG	KEYWORD1
+DotMGBase	KEYWORD1
+Point	KEYWORD1
+Rect	KEYWORD1
+Sprites	KEYWORD1
+SpritesB	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+blank	KEYWORD2
+buttonsState	KEYWORD2
+clear	KEYWORD2
+collide	KEYWORD2
+display	KEYWORD2
+drawBitmap	KEYWORD2
+drawChar	KEYWORD2
+drawCircle	KEYWORD2
+drawFastHLine	KEYWORD2
+drawFastVLine	KEYWORD2
+drawLine	KEYWORD2
+drawPixel	KEYWORD2
+drawRect	KEYWORD2
+drawRoundRect	KEYWORD2
+drawTriangle	KEYWORD2
+fillCircle	KEYWORD2
+fillRect	KEYWORD2
+fillRoundRect	KEYWORD2
+fillScreen	KEYWORD2
+fillTriangle	KEYWORD2
+flipVertical	KEYWORD2
+flipHorizontal	KEYWORD2
+generateRandomSeed	KEYWORD2
+getBuffer	KEYWORD2
+getCursorX	KEYWORD2
+getCursorY	KEYWORD2
+getPixel	KEYWORD2
+getTextBackground	KEYWORD2
+getTextColor	KEYWORD2
+getTextSize	KEYWORD2
+getTextWrap	KEYWORD2
+height	KEYWORD2
+idle	KEYWORD2
+initRandomSeed	KEYWORD2
+invert	KEYWORD2
+justPressed	KEYWORD2
+justReleased	KEYWORD2
+notPressed	KEYWORD2
+paintScreen	KEYWORD2
+pollButtons	KEYWORD2
+pressed	KEYWORD2
+setCursor	KEYWORD2
+setTextBackground	KEYWORD2
+setTextColor	KEYWORD2
+setTextSize	KEYWORD2
+setTextWrap	KEYWORD2
+TransferSPI	KEYWORD2
+waitNoButtons	KEYWORD2
+width	KEYWORD2
+
+# Sprites class
+drawErase	KEYWORD2
+drawExternalMask	KEYWORD2
+drawOverwrite	KEYWORD2
+drawPlusMask	KEYWORD2
+drawSelfMasked	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+COLOR_A LITERAL1
+COLOR_B LITERAL1
+COLOR_C LITERAL1
+COLOR_D LITERAL1
+
+HEIGHT	LITERAL1
+WIDTH	LITERAL1
+
+CLEAR_BUFFER	LITERAL1
+
+INVERT LITERAL1
+
+A_BUTTON	LITERAL1
+B_BUTTON	LITERAL1
+DOWN_BUTTON	LITERAL1
+LEFT_BUTTON	LITERAL1
+RIGHT_BUTTON	LITERAL1
+UP_BUTTON	LITERAL1
+
+PIN_SPEAKER	LITERAL1

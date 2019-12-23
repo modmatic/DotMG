@@ -1,0 +1,17 @@
+{
+    "name": "Arduboy2DotMG",
+    "keywords": "dotmg, arduboy, game",
+    "description": "An alternative library for content creation on the Modmatic dotMG handheld gaming platform",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/modmatic/Arduboy2DotMG.git"
+    },
+    "version": "0.0.1",
+    "export":
+    {
+        "exclude": "extras"
+    },
+    "frameworks": "arduino",
+    "platforms": "atmelavr"
+}
