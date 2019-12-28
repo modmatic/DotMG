@@ -390,7 +390,7 @@ class DotMGBase : public DotMGCore
    *         0XXX 0YYY
    *    bit: 7654 3210
    *
-   * Bits 3 and 7 will always be zero, since only the first three bits are needed
+   * Bits 3 and 7 should always be zero, since only the first three bits are needed
    * to represent the pixel value.
    *
    * The array must be located in program memory by using the PROGMEM modifier.
@@ -505,7 +505,7 @@ class DotMGBase : public DotMGCore
    *
    * \details
    * Read and save the current state of the buttons and also keep track of the
-   * button state when this function was previouly called. These states are
+   * button state when this function was previously called. These states are
    * used by the `justPressed()` and `justReleased()` functions to determine
    * if a button has changed state between now and the previous call to
    * `pollButtons()`.
@@ -517,10 +517,9 @@ class DotMGBase : public DotMGCore
    * example:
    * \code{.cpp}
    * void loop() {
-   *   if (!arduboy.nextFrame()) {
-   *     return;
-   *   }
-   *   arduboy.pollButtons();
+   *   ...
+   *
+   *   dmg.pollButtons();
    *
    *   // use justPressed() as necessary to determine if a button was just pressed
    * \endcode
@@ -655,7 +654,7 @@ class DotMGBase : public DotMGCore
 //==============================
 
 /** \brief
- * The main functions provided for writing sketches for the Arduboy,
+ * The main functions provided for writing sketches for the dotMG,
  * _including_ text output.
  *
  * \details
@@ -698,69 +697,16 @@ class DotMG : public Print, public DotMGBase
    * \code{.cpp}
    * int value = 42;
    *
-   * arduboy.println("Hello World"); // Prints "Hello World" and then moves the
+   * dmg.println("Hello World"); // Prints "Hello World" and then moves the
    *                                 // text cursor to the start of the next line
-   * arduboy.print(value);  // Prints "42"
-   * arduboy.print('\n');   // Moves the text cursor to the start of the next line
-   * arduboy.print(78, HEX) // Prints "4E" (78 in hexadecimal)
+   * dmg.print(value);  // Prints "42"
+   * dmg.print('\n');   // Moves the text cursor to the start of the next line
+   * dmg.print(78, HEX) // Prints "4E" (78 in hexadecimal)
    * \endcode
    *
    * \see DotMG::write()
    */
   using Print::write;
-
-  /** \brief
-   * Display the boot logo sequence using printed text instead of a bitmap.
-   *
-   * \details
-   * This function can be called by a sketch after `boot()` as an alternative
-   * to `bootLogo()`.
-   *
-   * The Arduboy logo scrolls down from the top of the screen to the center
-   * while the RGB LEDs light in sequence.
-   *
-   * This function is the same as `bootLogo()` except the logo is printed as
-   * text instead of being rendered as a bitmap. It can be used to save some
-   * code space in a case where the sketch is using the Print class functions
-   * to display text. However, the logo will not look as good when printed as
-   * text as it does with the bitmap used by `bootLogo()`.
-   *
-   * If the RIGHT button is pressed while the logo is scrolling down,
-   * the boot logo sequence will be aborted. This can be useful for
-   * developers who wish to quickly start testing, or anyone else who is
-   * impatient and wants to go straight to the actual sketch.
-   *
-   * If the SYS_FLAG_SHOW_LOGO_LEDS flag in system EEPROM is cleared,
-   * the RGB LEDs will not be flashed during the logo display sequence.
-   *
-   * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
-   * will return without executing the logo display sequence.
-   *
-   * \see bootLogo() boot() DotMG::bootLogoExtra()
-   */
-  void bootLogoText();
-
-  /** \brief
-   * Show the unit name at the bottom of the boot logo screen.
-   *
-   * \details
-   * This function is called by `bootLogoShell()` and `bootLogoText()`.
-   *
-   * If a unit name has been saved in system EEPROM, it will be displayed at
-   * the bottom of the screen. This function pauses for a short time to allow
-   * the name to be seen.
-   *
-   * If the SYS_FLAG_UNAME flag in system EEPROM is cleared, this function
-   * will return without showing the unit name or pausing.
-   *
-   * \note
-   * This function would not normally be called directly from within a sketch
-   * itself.
-   *
-   * \see readUnitName() writeUnitName() bootLogo() bootLogoShell()
-   * bootLogoText() writeShowUnitNameFlag() begin()
-   */
-  virtual void bootLogoExtra();
 
   /** \brief
    * Write a single ASCII character at the current text cursor location.
@@ -770,7 +716,7 @@ class DotMG : public Print, public DotMGBase
    * \return The number of characters written (will always be 1).
    *
    * \details
-   * This is the Arduboy implemetation of the Arduino virtual `write()`
+   * This is the dotMG implemetation of the Arduino virtual `write()`
    * function. The single ASCII character specified is written to the
    * the screen buffer at the current text cursor. The text cursor is then
    * moved to the next character position in the screen buffer. This new cursor
