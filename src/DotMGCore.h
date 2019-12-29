@@ -93,10 +93,10 @@
 #define COLOR(R, G, B) ((((R) & 0xF) << 8) | (((G) & 0xF) << 4) | ((B) & 0xF))
 
 // 2-bit pixel color values
-#define COLOR_A 0
-#define COLOR_B 1
-#define COLOR_C 2
-#define COLOR_D 3
+#define COLOR_BG 0
+#define COLOR_A  1
+#define COLOR_B  2
+#define COLOR_C  3
 
 // Some ready-made 12-bit ('444') color values
 #define ST77XX_WHITE      0x0FFF
@@ -336,13 +336,13 @@ class DotMGCore
     /** \brief
      * Get the actual 12-bit display color for a given 2-bit color.
      *
-     * \param color The color to get. Must be COLOR_A, COLOR_B, COLOR_C, or COLOR_D.
+     * \param color The color to get. Must be COLOR_A, COLOR_B, COLOR_C, or COLOR_BG.
      *
      * \details
      * Returns a 12-bit 444-formatted RGB color value.
      *
      * \note
-     * COLOR_D is generally used as the background color, as it is used by any screen-clearing
+     * COLOR_BG is used as the background color, as it is used by any screen-clearing
      * operations.
      *
      * \see setColor() blank()
@@ -352,14 +352,14 @@ class DotMGCore
     /** \brief
      * Set the actual 12-bit display color for a given 2-bit color.
      *
-     * \param color The color to set. Must be COLOR_A, COLOR_B, COLOR_C, or COLOR_D.
+     * \param color The color to set. Must be COLOR_A, COLOR_B, COLOR_C, or COLOR_BG.
      * \param value The color value to set. Must be a 12-bit 444-formatted RGB color value.
      *
      * \details
      * May be called before begin(). Value will take effect on next call to display().
      *
      * \note
-     * COLOR_D is generally used as the background color, as it is used by any screen-clearing
+     * COLOR_BG is used as the background color, as it is used by any screen-clearing
      * operations.
      *
      * You can use the COLOR(r, g, b) macro to convert individual color channels
@@ -384,7 +384,7 @@ class DotMGCore
      *
      * The format for each byte is as follows, where WW, XX, YY, and ZZ each
      * represent a pixel value that is one of COLOR_A, COLOR_B, COLOR_C, or
-     * COLOR_D:
+     * COLOR_BG:
      *
      *         WW XX YY ZZ
      *    bit: 76 54 32 10
@@ -408,7 +408,7 @@ class DotMGCore
      *
      * The format for each byte is as follows, where WW, XX, YY, and ZZ each
      * represent a pixel value that is one of COLOR_A, COLOR_B, COLOR_C, or
-     * COLOR_D:
+     * COLOR_BG:
      *
      *         WW XX YY ZZ
      *    bit: 76 54 32 10
@@ -416,10 +416,10 @@ class DotMGCore
     void static paintScreen(uint8_t image[], bool clear = false);
 
     /** \brief
-     * Blank the display screen by setting all pixels to COLOR_D's configured
+     * Blank the display screen by setting all pixels to COLOR_BG's configured
      * color.
      *
-     * \see getColorD() setColorD()
+     * \see getColorValue() setColorValue()
      */
     void static blank();
 

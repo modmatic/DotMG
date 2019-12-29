@@ -14,7 +14,7 @@ uint16_t DotMGCore::colors[] = {
   ST77XX_DARKGRAY,
   ST77XX_BLACK,
 };
-uint8_t DotMGCore::MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MX;
+uint8_t DotMGCore::MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
 bool DotMGCore::inverted = false;
 
 DotMGCore::DotMGCore() { }
@@ -133,9 +133,9 @@ void DotMGCore::bootTFT()
 
   setWriteRegion();
   for (int i = 0; i < (TFT_WIDTH*TFT_HEIGHT)/2; i++) {
-    transferSPI(colors[COLOR_D] >> 4);
-    transferSPI(((colors[COLOR_D] & 0xF) << 4) | (colors[COLOR_D] >> 8));
-    transferSPI(colors[COLOR_D]);
+    transferSPI(colors[COLOR_BG] >> 4);
+    transferSPI(((colors[COLOR_BG] & 0xF) << 4) | (colors[COLOR_BG] >> 8));
+    transferSPI(colors[COLOR_BG]);
   }
 
   sendLCDCommand(ST77XX_DISPON); //  Turn screen on
@@ -287,15 +287,17 @@ void DotMGCore::paintScreen(uint8_t image[], bool clear)
   startTransferSPI();
 
   setWriteRegion();
-  for (uint16_t r = 0; r < WIDTH*HEIGHT; r += WIDTH)
+  for (uint16_t r = 0; r < HEIGHT; r++)
   {
     for (uint8_t i = 0; i < 2; i++)
     {
       for (uint16_t c = 0; c < WIDTH/4; c++)
       {
-        const uint8_t pixels = image[c + r];
+        const uint8_t pixels = image[c + (r*WIDTH)/4];
+        // Serial.print(pixels, HEX);
+        // Serial.print("\n");
 
-        for (uint8_t sh = 6; sh >= 0; sh -= 2)
+        for (int8_t sh = 6; sh >= 0; sh -= 2)
         {
           const uint16_t px = colors[(pixels >> sh) & 0b11];
           // SPDR = px >> 4;
@@ -330,7 +332,7 @@ void DotMGCore::paintScreen(uint8_t image[], bool clear)
 
   if (clear)
   {
-    memset(image, COLOR_D << 6 | COLOR_D << 4 | COLOR_D << 2 | COLOR_D, (WIDTH*HEIGHT)/4);
+    memset(image, 0, (WIDTH*HEIGHT)/4);
   }
 }
 
@@ -341,9 +343,9 @@ void DotMGCore::blank()
   setWriteRegion();
   for (int i = 0; i < (TFT_WIDTH*TFT_HEIGHT)/2; i++)
   {
-    transferSPI(colors[COLOR_D] >> 4);
-    transferSPI(((colors[COLOR_D] & 0xF) << 4) | (colors[COLOR_D] >> 8));
-    transferSPI(colors[COLOR_D]);
+    transferSPI(colors[COLOR_BG] >> 4);
+    transferSPI(((colors[COLOR_BG] & 0xF) << 4) | (colors[COLOR_BG] >> 8));
+    transferSPI(colors[COLOR_BG]);
   }
 
   endTransferSPI();
@@ -402,11 +404,11 @@ void DotMGCore::flipVertical(bool flipped)
 {
   if (flipped)
   {
-    MADCTL &= ~ST77XX_MADCTL_MX;
+    MADCTL |= ST77XX_MADCTL_MX;
   }
   else
   {
-    MADCTL |= ST77XX_MADCTL_MX;
+    MADCTL &= ~ST77XX_MADCTL_MX;
   }
   startTransferSPI();
   sendLCDCommand(ST77XX_MADCTL);
@@ -419,11 +421,11 @@ void DotMGCore::flipHorizontal(bool flipped)
 {
   if (flipped)
   {
-    MADCTL |= ST77XX_MADCTL_MY;
+    MADCTL &= ~ST77XX_MADCTL_MY;
   }
   else
   {
-    MADCTL &= ~ST77XX_MADCTL_MY;
+    MADCTL |= ST77XX_MADCTL_MY;
   }
   startTransferSPI();
   sendLCDCommand(ST77XX_MADCTL);

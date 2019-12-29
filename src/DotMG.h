@@ -28,7 +28,7 @@
  * Color value to indicate pixels are to be inverted.
  *
  * \details
- * Pixels colored with COLOR_A in screen buffer will change to COLOR_D, and vice versa.
+ * Pixels colored with COLOR_A in screen buffer will change to COLOR_BG, and vice versa.
  * Pixels colored with COLOR_B in screen buffer will change to COLOR_C, and vice versa.
  *
  * \note
@@ -164,7 +164,7 @@ class DotMGBase : public DotMGCore
    * Clear the display buffer.
    *
    * \details
-   * The entire contents of the screen buffer are cleared to COLOR_D.
+   * The entire contents of the screen buffer are cleared to COLOR_BG.
    *
    * \see display(bool)
    */
@@ -216,7 +216,7 @@ class DotMGBase : public DotMGCore
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
    *
-   * \return COLOR_A, COLOR_B, COLOR_C, or COLOR_D.
+   * \return COLOR_A, COLOR_B, COLOR_C, or COLOR_BG.
    */
   uint8_t getPixel(uint8_t x, uint8_t y);
 
@@ -376,7 +376,7 @@ class DotMGBase : public DotMGCore
    * most significant bit at the left end of the row.
    *
    * The format for each byte is as follows, where XXX and YYY each represent a
-   * pixel value that is one of COLOR_A, COLOR_B, COLOR_C, COLOR_D, COLOR_TRANS,
+   * pixel value that is one of COLOR_A, COLOR_B, COLOR_C, COLOR_BG, COLOR_TRANS,
    * or COLOR_INVERT:
    *
    *         0XXX 0YYY
@@ -404,7 +404,7 @@ class DotMGBase : public DotMGCore
    *
    * The format for each byte is as follows, where WW, XX, YY, and ZZ each
    * represent a pixel value that is one of COLOR_A, COLOR_B, COLOR_C, or
-   * COLOR_D:
+   * COLOR_BG:
    *
    *         WW XX YY ZZ
    *    bit: 76 54 32 10
@@ -624,14 +624,14 @@ class DotMGBase : public DotMGCore
    *
    * The format for each byte is as follows, where WW, XX, YY, and ZZ each
    * represent a pixel value that is one of COLOR_A, COLOR_B, COLOR_C, or
-   * COLOR_D:
+   * COLOR_BG:
    *
    *         WW XX YY ZZ
    *    bit: 76 54 32 10
    *
    * \see getBuffer()
    */
-  static uint8_t sBuffer[(HEIGHT*WIDTH)/4];
+  static uint8_t sBuffer[(WIDTH*HEIGHT)/4];
 
  protected:
 

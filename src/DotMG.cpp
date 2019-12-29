@@ -42,7 +42,7 @@ DotMGBase::DotMGBase()
 // provides by default
 void DotMGBase::begin()
 {
-  memset(sBuffer, COLOR_D << 6 | COLOR_D << 4 | COLOR_D << 2 | COLOR_D, (WIDTH*HEIGHT)/4);
+  memset(sBuffer, 0, (WIDTH*HEIGHT)/4);
 
   bootPins();
   bootSPI();
@@ -73,7 +73,7 @@ void DotMGBase::initRandomSeed()
 
 void DotMGBase::clear()
 {
-  fillScreen(COLOR_D);
+  fillScreen(COLOR_BG);
 }
 
 void DotMGBase::drawPixel(int16_t x, int16_t y, uint8_t color)
@@ -548,8 +548,8 @@ DotMG::DotMG()
 {
   cursor_x = 0;
   cursor_y = 0;
-  textColor = 1;
-  textBackground = 0;
+  textColor = COLOR_A;
+  textBackground = COLOR_BG;
   textSize = 1;
   textWrap = 0;
 }
