@@ -40,12 +40,6 @@ void setup()
 
 The rest of the `DotMG` functions will now be available for use.
 
-If you wish to use the `Sprites` class functions, you must create a `Sprites` object:
-
-```cpp
-Sprites sprites;
-```
-
 Sample sketches have been included with the library as examples of how to use it. To load an example, for examination and uploading to the dotMG, using the Arduino IDE menus select:
 
 `File > Examples > DotMG`
@@ -56,7 +50,7 @@ The `BeepPin1` and `BeepPin2` classes are available from the [`Arduboy2BeepDotMG
 
 For more complex melodies, see the [`ArduboyTonesDotMG`](https://github.com/modmatic/ArduboyTonesDotMG) library.
 
-### Ways to make more code space available to sketches
+### To make more code space available to sketches
 
 #### Remove the text functions
 
@@ -76,17 +70,4 @@ with
 
 ```cpp
 DotMGBase dmg;
-```
-
-#### Use the `SpritesB` class instead of `Sprites`
-
-The `SpritesB` class has functions identical to the `Sprites` class. The difference is that `SpritesB` is optimized for small code size rather than execution speed. If you want to use the sprites functions, and the slower speed of `SpritesB` doesn't affect your sketch, you may be able to use it to gain some code space.
-
-Even if the speed is acceptable when using `SpritesB`, you should still try using `Sprites`. In some cases `Sprites` will produce less code than `SpritesB`, notably when only one of the functions is used.
-
-You can easily switch between using `Sprites` or `SpritesB` by using one or the other to create an object instance:
-
-```cpp
-Sprites sprites;  // Use this to optimize for execution speed
-SpritesB sprites; // Use this to (likely) optimize for code size
 ```

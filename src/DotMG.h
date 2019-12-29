@@ -9,17 +9,9 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include "DotMG.h"
-#include "Sprites.h"
-#include "SpritesB.h"
+#include "DotMGCore.h"
 #include <Print.h>
 
-
-// pixel colors
-#define COLOR_A 0
-#define COLOR_B 1
-#define COLOR_C 2
-#define COLOR_D 3
 
 /** \brief
  * Color value to indicate pixels are to be transparent.
@@ -172,7 +164,7 @@ class DotMGBase : public DotMGCore
    * Clear the display buffer.
    *
    * \details
-   * The entire contents of the screen buffer are cleared to COLOR_A.
+   * The entire contents of the screen buffer are cleared to COLOR_D.
    *
    * \see display(bool)
    */

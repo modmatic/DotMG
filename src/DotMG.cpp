@@ -5,7 +5,6 @@
  */
 
 #include "DotMG.h"
-#include "ab_logo.c"
 #include "glcdfont.c"
 
 //================================
@@ -36,10 +35,6 @@ DotMGBase::DotMGBase()
 {
   currentButtonState = 0;
   previousButtonState = 0;
-  // frame management
-  setFrameDuration(16);
-  frameCount = 0;
-  justRendered = false;
 }
 
 // functions called here should be public so users can create their
@@ -47,7 +42,11 @@ DotMGBase::DotMGBase()
 // provides by default
 void DotMGBase::begin()
 {
-  boot(); // raw hardware
+  memset(sBuffer, COLOR_D << 6 | COLOR_D << 4 | COLOR_D << 2 | COLOR_D, (WIDTH*HEIGHT)/4);
+
+  bootPins();
+  bootSPI();
+  bootTFT();
 
   waitNoButtons(); // wait for all buttons to be released
 }
@@ -55,7 +54,7 @@ void DotMGBase::begin()
 // wait for all buttons to be released
 void DotMGBase::waitNoButtons() {
   do {
-    delayShort(50); // simple button debounce
+    delay(50); // simple button debounce
   } while (buttonsState());
 }
 
@@ -74,7 +73,7 @@ void DotMGBase::initRandomSeed()
 
 void DotMGBase::clear()
 {
-  fillScreen(BLACK);
+  fillScreen(COLOR_D);
 }
 
 void DotMGBase::drawPixel(int16_t x, int16_t y, uint8_t color)
@@ -85,7 +84,7 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, uint8_t color)
   }
 
   uint16_t idx = (x + y*WIDTH)/4;
-  uint8_t data = buff[idx];
+  uint8_t data = sBuffer[idx];
   uint8_t shift = (3 - (x & 0b11)) * 2;  // x & 0b11 == x % 4
   uint8_t mask = 0b11 << shift;
 
@@ -96,14 +95,14 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, uint8_t color)
     data = (data & ~mask) | (color << shift);  // set color bits
   }
 
-  buff[idx] = data;
+  sBuffer[idx] = data;
 }
 
 uint8_t DotMGBase::getPixel(uint8_t x, uint8_t y)
 {
   uint16_t idx = (x + y*WIDTH)/4;
   uint8_t shift = (3 - (x & 0b11)) * 2;  // x & 0b11 == x % 4
-  return (buff[idx] >> shift) & 0b11;
+  return (sBuffer[idx] >> shift) & 0b11;
 }
 
 void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
@@ -300,51 +299,10 @@ void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint8_t h, uint8_t color)
 
 void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint8_t w, uint8_t color)
 {
-  int16_t xEnd; // last x point + 1
-
-  // Do y bounds checks
-  if (y < 0 || y >= HEIGHT)
-    return;
-
-  xEnd = x + w;
-
-  // Check if the entire line is not on the display
-  if (xEnd <= 0 || x >= WIDTH)
-    return;
-
-  // Don't start before the left edge
-  if (x < 0)
-    x = 0;
-
-  // Don't end past the right edge
-  if (xEnd > WIDTH)
-    xEnd = WIDTH;
-
-  // calculate actual width (even if unchanged)
-  w = xEnd - x;
-
-  // buffer pointer plus row offset + x offset
-  register uint8_t *pBuf = sBuffer + ((y / 8) * WIDTH) + x;
-
-  // pixel mask
-  register uint8_t mask = 1 << (y & 7);
-
-  switch (color)
+  int end = x+w;
+  for (int a = max(0,x); a < min(end,WIDTH); a++)
   {
-    case WHITE:
-      while (w--)
-      {
-        *pBuf++ |= mask;
-      }
-      break;
-
-    case BLACK:
-      mask = ~mask;
-      while (w--)
-      {
-        *pBuf++ &= mask;
-      }
-      break;
+    drawPixel(a,y,color);
   }
 }
 
