@@ -34,8 +34,8 @@
  * DotMG arduboy;
  *
  * // DotMGAudio functions can be called as follows:
- *   arduboy.audio.on();
- *   arduboy.audio.off();
+ *   dmg.audio.on();
+ *   dmg.audio.off();
  * \endcode
  *
  * \note
@@ -57,7 +57,7 @@
  * #include <ArduboyTones.h>
  *
  * DotMG arduboy;
- * ArduboyTones sound(arduboy.audio.enabled);
+ * ArduboyTones sound(dmg.audio.enabled);
  * \endcode
  * \endparblock
  *

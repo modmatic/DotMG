@@ -8,7 +8,7 @@
 #define DOTMG_CORE_H
 
 #include <Arduino.h>
-#include "colors.h"
+#include "Color.h"
 
 // ----- Helpful values/macros -----
 
@@ -167,28 +167,13 @@
  * Lower level functions generally dealing directly with the hardware.
  *
  * \details
- * This class is inherited by DotMGBase and thus also DotMG, so wouldn't
+ * This class is inherited by DotMGBase and thus also DotMG, so it wouldn't
  * normally be used directly by a sketch.
- *
- * \note
- * A friend class named _DotMGEx_ is declared by this class. The intention
- * is to allow a sketch to create an _DotMGEx_ class which would have access
- * to the private and protected members of the DotMGCore class. It is hoped
- * that this may eliminate the need to create an entire local copy of the
- * library, in order to extend the functionality, in most circumstances.
  */
 class DotMGCore
 {
-  friend class DotMGEx;
-
   public:
     DotMGCore();
-
-    /** \brief
-     * Originally intended to save power on the original Arduboy. It is not
-     * necessary for dotMG, so this function does nothing.
-     */
-    void static idle() {}
 
     /** \brief
      * Put the display into data mode.
@@ -205,7 +190,6 @@ class DotMGCore
      * \see displayCommandMode() SPITransfer()
      */
     void static displayDataMode();
-    inline void static LCDDataMode() { displayDataMode(); }  // For compatibility
 
     /** \brief
      * Put the display into command mode.
@@ -258,7 +242,6 @@ class DotMGCore
      * complete.
      */
     void static SPITransfer(uint8_t data);
-    inline void static SPItransfer(uint8_t data) { SPITransfer(data); }  // For compatibility
 
     /** \brief
      * Turn the display off.
@@ -317,152 +300,6 @@ class DotMGCore
      * A_BUTTON, B_BUTTON, UP_BUTTON, DOWN_BUTTON, LEFT_BUTTON, RIGHT_BUTTON, START_BUTTON, SELECT_BUTTON
      */
     uint8_t static buttonsState();
-
-    /** \brief
-     * Get the current display pixel color.
-     *
-     * \details
-     * Returns a 12-bit 444-formatted RGB color value.
-     *
-     * \see setPixelColor() getBorderLineColor() setBorderLineColor() getBorderFillColor() setBorderFillColor()
-     * getBackgroundColor() setBackgroundColor() setColorTheme()
-     */
-    uint16_t static getPixelColor();
-
-    /** \brief
-     * Set the display pixel color.
-     *
-     * \param color The color to set.
-     *
-     * \details
-     * Color must be a 12-bit 444-formatted RGB color value. May be called before `begin()`
-     * or `boot()`. Value will take effect on next call to `paintScreen()`.
-     *
-     * \note
-     * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-     * color values.
-     *
-     * \see getPixelColor() getBorderLineColor() setBorderLineColor() getBorderFillColor()
-     * setBorderFillColor() getBackgroundColor() setBackgroundColor() setColorTheme()
-     */
-    void static setPixelColor(uint16_t color);
-
-    /** \brief
-     * Get the current display background color.
-     *
-     * \details
-     * Returns a 12-bit 444-formatted RGB color value.
-     *
-     * \see setBackgroundColor() getPixelColor() setPixelColor() getBorderLineColor()
-     * setBorderLineColor() getBorderFillColor() setBorderFillColor() setColorTheme()
-     *
-     */
-    uint16_t static getBackgroundColor();
-
-    /** \brief
-     * Set the display background color.
-     *
-     * \param color The color to set.
-     *
-     * \details
-     * Color must be a 12-bit 444-formatted RGB color value. May be called before `begin()`
-     * or `boot()`. Value will take effect on next call to `paintScreen()`.
-     *
-     * \note
-     * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-     * color values.
-     *
-     * \see getBackgroundColor() getPixelColor() setPixelColor() getBorderLineColor()
-     * setBorderLineColor() getBorderFillColor() setBorderFillColor() setColorTheme()
-     */
-    void static setBackgroundColor(uint16_t color);
-
-    /** \brief
-     * Get the current display border line color.
-     *
-     * \details
-     * Returns a 12-bit 444-formatted RGB color value.
-     *
-     * \see setBorderLineColor() getBorderFillColor() setBorderFillColor() getPixelColor()
-     * setPixelColor() getBackgroundColor() setBackgroundColor() setColorTheme()
-     */
-    uint16_t static getBorderLineColor();
-
-    /** \brief
-     * Set the display border line color.
-     *
-     * \param color The color to set.
-     *
-     * \details
-     * Color must be a 12-bit 444-formatted RGB color value. May be called before `begin()`
-     * or `boot()`.
-     *
-     * \note
-     * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-     * color values.
-     *
-     * \see getBorderLineColor() getBorderFillColor() setBorderFillColor() getPixelColor()
-     * setPixelColor() getBackgroundColor() setBackgroundColor() setColorTheme()
-     */
-    void static setBorderLineColor(uint16_t color);
-
-    /** \brief
-     * Get the current display border fill color.
-     *
-     * \details
-     * Returns a 12-bit 444-formatted RGB color value.
-     *
-     * \see setBorderFillColor() getBorderLineColor() setBorderLineColor() getPixelColor()
-     * setPixelColor() getBackgroundColor() setBackgroundColor() setColorTheme()
-     */
-    uint16_t static getBorderFillColor();
-
-    /** \brief
-     * Set the display border fill color.
-     *
-     * \param color The color to set.
-     *
-     * \details
-     * Color must be a 12-bit 444-formatted RGB color value. May be called before `begin()`
-     * or `boot()`.
-     *
-     * \note
-     * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-     * color values.
-     *
-     * \see getBorderFillColor() getBorderLineColor() setBorderLineColor() getPixelColor()
-     * setPixelColor() getBackgroundColor() setBackgroundColor() setColorTheme()
-     */
-    void static setBorderFillColor(uint16_t color);
-
-
-    /** \brief
-     * Set the color theme.
-     *
-     * \param theme The theme to set.
-     *
-     * \details
-     * Colors in `theme` must be 12-bit 444-formatted RGB color values. May be called before
-     * `begin()` or `boot()`. Setting will take effect on next call to `paintScreen()`.
-     *
-     * \note
-     * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-     * color values.
-     *
-     * \see getPixelColor() setPixelColor() getBackgroundColor() setBackgroundColor()
-     * getBorderLineColor() setBorderLineColor() getBorderFillColor() setBorderFillColor()
-     */
-    void static setColorTheme(Theme theme);
-
-    /** \brief
-     * Originally meant to paint 8 pixels vertically to the display. This is not
-     * implemented for dotMG.
-     *
-     * \param pixels A byte whose bits specify a vertical column of 8 pixels.
-     *
-     * \see paintScreen()
-     */
-    void static paint8Pixels(uint8_t pixels) {}
 
     /** \brief
      * Paints an entire image directly to the display from program memory.

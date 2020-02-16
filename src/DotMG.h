@@ -15,28 +15,6 @@
 #include <Print.h>
 #include "DotMGAudio.h"
 
-/** \brief
- * Color value to indicate pixels are to be transparent.
- *
- * \details
- * Pixel value in current screen buffer will remain unchanged.
- *
- * \note
- * Currently supported by any `DotMGBase::draw*()` method.
- */
-#define COLOR_TRANS 0x1000
-
-/** \brief
- * Color value to indicate pixels are to be inverted.
- *
- * \details
- * Pixels will become their RGB complement.
- *
- * \note
- * Currently supported by any `DotMGBase::draw*()` method.
- */
-#define INVERT 0x2000
-
 #define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
 
 
@@ -120,21 +98,10 @@ struct Point
  * This class in inherited by DotMG, so if text output functions are
  * required DotMG should be used instead.
  *
- * \note
- * \parblock
- * A friend class named _DotMGEx_ is declared by this class. The intention
- * is to allow a sketch to create an _DotMGEx_ class which would have access
- * to the private and protected members of the DotMGBase class. It is hoped
- * that this may eliminate the need to create an entire local copy of the
- * library, in order to extend the functionality, in most circumstances.
- * \endparblock
- *
  * \see DotMG
  */
 class DotMGBase : public DotMGCore
 {
- friend class DotMGEx;
-
  public:
   DotMGBase();
 
@@ -165,7 +132,7 @@ class DotMGBase : public DotMGCore
    * Clear the display buffer.
    *
    * \details
-   * The entire contents of the screen buffer are cleared to COLOR_BG.
+   * The entire contents of the screen buffer are cleared to `COLOR_BLACK`.
    *
    * \see display(bool)
    */
@@ -208,15 +175,8 @@ class DotMGBase : public DotMGCore
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  static void drawPixel(int16_t x, int16_t y, uint16_t color = COLOR_WHITE);
+  static void drawPixel(int16_t x, int16_t y, Color color = COLOR_WHITE);
 
   /** \brief
    * Returns the color of the given pixel in the screen buffer.
@@ -224,9 +184,13 @@ class DotMGBase : public DotMGCore
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
    *
-   * \return A 12-bit 444-formatted RGB color value.
+   * \details
+   * The returned color represents the value that will be sent to the display
+   * (if no additional drawing occurs at the pixel's location). In other words,
+   * it represents the result of any previous blending that might have occurred
+   * during a `draw*()` function.
    */
-  uint16_t getPixel(uint8_t x, uint8_t y);
+  Color getPixel(uint8_t x, uint8_t y);
 
   /** \brief
    * Draw a circle of a given radius.
@@ -235,20 +199,8 @@ class DotMGBase : public DotMGCore
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawCircle(int16_t x0, int16_t y0, uint8_t r, uint16_t color = COLOR_WHITE);
-
-  // TODO: Move to protected/private?
-  // Draw one or more "corners" of a circle.
-  // (Not officially part of the API)
-  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, uint16_t color = COLOR_WHITE);
+  void drawCircle(int16_t x0, int16_t y0, uint8_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in circle of a given radius.
@@ -257,20 +209,8 @@ class DotMGBase : public DotMGCore
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void fillCircle(int16_t x0, int16_t y0, uint8_t r, uint16_t color = COLOR_WHITE);
-
-  // Draw one or both vertical halves of a filled-in circle or
-  // rounded rectangle edge.
-  // (Not officially part of the API)
-  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, uint16_t color = COLOR_WHITE);
+  void fillCircle(int16_t x0, int16_t y0, uint8_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a line between two specified points.
@@ -282,14 +222,8 @@ class DotMGBase : public DotMGCore
    * \details
    * Draw a line from the start point to the end point using Bresenham's algorithm.
    * The start and end points can be at any location with respect to the other.
-   *
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color = COLOR_WHITE);
+  void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a rectangle of a specified width and height.
@@ -299,15 +233,8 @@ class DotMGBase : public DotMGCore
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint16_t color = COLOR_WHITE);
+  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a vertical line.
@@ -316,15 +243,8 @@ class DotMGBase : public DotMGCore
    * \param y The Y coordinate of the upper start point.
    * \param h The height of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawFastVLine(int16_t x, int16_t y, uint8_t h, uint16_t color = COLOR_WHITE);
+  void drawFastVLine(int16_t x, int16_t y, uint8_t h, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a horizontal line.
@@ -333,15 +253,8 @@ class DotMGBase : public DotMGCore
    * \param y The Y coordinate of the left start point.
    * \param w The width of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawFastHLine(int16_t x, int16_t y, uint8_t w, uint16_t color = COLOR_WHITE);
+  void drawFastHLine(int16_t x, int16_t y, uint8_t w, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in rectangle of a specified width and height.
@@ -351,29 +264,15 @@ class DotMGBase : public DotMGCore
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint16_t color = COLOR_WHITE);
+  void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color = COLOR_WHITE);
 
   /** \brief
    * Fill the screen buffer with the specified color.
    *
    * \param color The fill color (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void fillScreen(uint16_t color = COLOR_WHITE);
+  void fillScreen(Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a rectangle with rounded corners.
@@ -384,15 +283,8 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint16_t color = COLOR_WHITE);
+  void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in rectangle with rounded corners.
@@ -403,15 +295,8 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
-   *
-   * \details
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint16_t color = COLOR_WHITE);
+  void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a triangle given the coordinates of each corner.
@@ -423,14 +308,8 @@ class DotMGBase : public DotMGCore
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to each other.
-   *
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color = COLOR_WHITE);
+  void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in triangle given the coordinates of each corner.
@@ -442,14 +321,8 @@ class DotMGBase : public DotMGCore
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to each other.
-   *
-   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color = COLOR_WHITE);
+  void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a bitmap from a horizontally-oriented array in program memory.
@@ -461,19 +334,12 @@ class DotMGBase : public DotMGCore
    * \param h The height of the bitmap in pixels.
    *
    * \details
-   * Each pixel is a 16-bit value that can represent either a 12-bit
-   * 444-formatted RGB color value (in which case the four most significant
-   * bits would be zero), `COLOR_TRANS`, or `COLOR_INVERT`. Pixels are arranged
-   * in rows, from left to right.
+   * Pixels are arranged in rows, from left to right.
    *
    * The input array must be located in program memory by using the `PROGMEM`
    * modifier.
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
    */
-  void drawBitmap(int16_t x, int16_t y, const uint16_t *bitmap, uint8_t w, uint8_t h);
+  void drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint8_t w, uint8_t h);
 
   /** \brief
    * Get a pointer to the display buffer in RAM.
@@ -489,18 +355,15 @@ class DotMGBase : public DotMGCore
    * most significant bit at the left end of the row. Pixels are 12-bit 444-formatted
    * RGB color values.
    *
-   * The format for two neighboring pixels is as follows:
+   * The format for two neighboring pixels is as follows, where RX, GX, BX represent
+   * the color data for the pixels:
    *
-   *         R
-   *    bit:  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
-   *
-   * \note
-   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
-   * color values.
-   *
-   * \see sBuffer
+   * Pixel: |------------- Pixel 1 -------------|------------- Pixel 2 -------------|
+   *  Data:  R3 R2 R1 R0 G3 G2 G1 G0 B3 B2 B1 B0 R3 R2 R1 R0 G3 G2 G1 G0 B3 B2 B1 B0
+   *   Bit:   7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
+   *  Byte: |------- Byte 1 --------|------- Byte 2 --------|------- Byte 3 --------|
    */
-  uint8_t* getBuffer();
+  uint8_t* frameBuffer();
 
   /** \brief
    * Create a seed suitable for use with a random number generator.
@@ -530,9 +393,6 @@ class DotMGBase : public DotMGCore
    * \see generateRandomSeed()
    */
   void initRandomSeed();
-
-  // Swap the values of two int16_t variables passed by reference.
-  void swap(int16_t& a, int16_t& b);
 
   /** \brief
    * Set the frame rate used by the frame control functions.
@@ -598,32 +458,16 @@ class DotMGBase : public DotMGCore
    * example:
    * \code{.cpp}
    * void loop() {
-   *   if (!arduboy.nextFrame()) {
+   *   if (!dmg.nextFrame()) {
    *     return; // go back to the start of the loop
    *   }
    *   // render and display the next frame
    * }
    * \endcode
    *
-   * \see setFrameRate() setFrameDuration() nextFrameDEV()
+   * \see setFrameRate() setFrameDuration()
    */
   bool nextFrame();
-
-  /** \brief
-   * Originally intended to visually indicate if the code is running slower than
-   * the desired frame rate by lighting the TX LED. This feature is not
-   * implemented for dotMG as the TX LED is not controlled programmatically.
-   * Therefore, it behaves exactly the same as `nextFrame()`.
-   *
-   * \return `true` if it's time for the next frame.
-   *
-   * \note
-   * Once a sketch is ready for release, it would be expected that
-   * `nextFrameDEV()` calls be restored to `nextFrame()`.
-   *
-   * \see nextFrame() cpuLoad() setFrameRate()
-   */
-  inline bool nextFrameDEV() { return nextFrame(); }
 
   /** \brief
    * Indicate if the specified number of frames has elapsed.
@@ -641,8 +485,8 @@ class DotMGBase : public DotMGCore
    * is being held down:
    *
    * \code{.cpp}
-   * if (arduboy.everyXFrames(5)) {
-   *   if arduboy.pressed(A_BUTTON) {
+   * if (dmg.everyXFrames(5)) {
+   *   if dmg.pressed(A_BUTTON) {
    *     fireShot();
    *   }
    * }
@@ -731,10 +575,10 @@ class DotMGBase : public DotMGCore
    * example:
    * \code{.cpp}
    * void loop() {
-   *   if (!arduboy.nextFrame()) {
+   *   if (!dmg.nextFrame()) {
    *     return;
    *   }
-   *   arduboy.pollButtons();
+   *   dmg.pollButtons();
    *
    *   // use justPressed() as necessary to determine if a button was just pressed
    * \endcode
@@ -833,193 +677,7 @@ class DotMGBase : public DotMGCore
   static bool collide(Rect rect1, Rect rect2);
 
   /** \brief
-   * Read the unit ID from system EEPROM.
-   *
-   * \return The value of the unit ID stored in system EEPROM.
-   *
-   * \details
-   * This function reads the unit ID that has been set in system EEPROM.
-   * The ID can be any value. It is intended to allow different units to be
-   * uniquely identified.
-   *
-   * \see writeUnitID() readUnitName()
-   */
-  uint16_t readUnitID();
-
-  /** \brief
-   * Write a unit ID to system EEPROM.
-   *
-   * \param id The value of the unit ID to be stored in system EEPROM.
-   *
-   * \details
-   * This function writes a unit ID to a reserved location in system EEPROM.
-   * The ID can be any value. It is intended to allow different units to be
-   * uniquely identified.
-   *
-   * \see readUnitID() writeUnitName()
-   */
-  void writeUnitID(uint16_t id);
-
-  /** \brief
-   * Read the unit name from system EEPROM.
-   *
-   * \param name A pointer to a string array variable where the unit name will
-   * be placed. The string will be up to 6 characters and terminated with a
-   * null (0x00) character, so the provided array must be at least 7 bytes long.
-   *
-   * \return The length of the string (0-6).
-   *
-   * \details
-   * This function reads the unit name that has been set in system EEPROM. The
-   * name is in ASCII and can contain any values except 0xFF and the
-   * null (0x00) terminator value.
-   *
-   * The name can be used for any purpose. It could identify the owner or
-   * give the unit itself a nickname. A sketch could use it to automatically
-   * fill in a name or initials in a high score table, or display it as the
-   * "player" when the opponent is the computer.
-   *
-   * \note
-   * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
-   * hard coding a 6 when working with the unit name. For example, to allocate
-   * a buffer and read the unit name into it:
-   * \code{.cpp}
-   * // Buffer for maximum name length plus the terminator
-   * char unitName[ARDUBOY_UNIT_NAME_LEN + 1];
-   *
-   * // The actual name length
-   * byte unitNameLength;
-   *
-   * unitNameLength = arduboy.readUnitName(unitName);
-   * \endcode
-   *
-   * \see writeUnitName() readUnitID() DotMG::bootLogoExtra()
-   */
-  uint8_t readUnitName(char* name);
-
-  /** \brief
-   * Write a unit name to system EEPROM.
-   *
-   * \param name A pointer to a string array variable containing the unit name
-   * to be saved. The string can be up to 6 characters and must be terminated
-   * with a null (0x00) character. It can contain any values except 0xFF.
-   *
-   * \details
-   * This function writes a unit name to a reserved area in system EEPROM.
-   * The name is in ASCII and can contain any values except 0xFF and the
-   * null (0x00) terminator value. The newline character (LF, \\n, 0x0A) and
-   * carriage return character (CR, \\r, 0x0D) should also be avoided.
-   *
-   * The name can be used for any purpose. It could identify the owner or
-   * give the unit itself a nickname. A sketch could use it to automatically
-   * fill in a name or initials in a high score table, or display it as the
-   * "player" when the opponent is the computer.
-   *
-   * \note
-   * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
-   * hard coding a 6 when working with the unit name.
-   *
-   * \see readUnitName() writeUnitID() DotMG::bootLogoExtra()
-   */
-  void writeUnitName(char* name);
-
-  /** \brief
-   * Read the "Show Boot Logo" flag in system EEPROM.
-   *
-   * \return `true` if the flag is set to indicate that the boot logo sequence
-   * should be displayed. `false` if the flag is set to not display the
-   * boot logo sequence.
-   *
-   * \details
-   * The "Show Boot Logo" flag is used to determine whether the system
-   * boot logo sequence is to be displayed when the system boots up.
-   * This function returns the value of this flag.
-   *
-   * \see writeShowBootLogoFlag() bootLogo()
-   */
-  bool readShowBootLogoFlag();
-
-  /** \brief
-   * Write the "Show Boot Logo" flag in system EEPROM.
-   *
-   * \param val If `true` the flag is set to indicate that the boot logo
-   * sequence should be displayed. If `false` the flag is set to not display
-   * the boot logo sequence.
-   *
-   * \details
-   * The "Show Boot Logo" flag is used to determine whether the system
-   * boot logo sequence is to be displayed when the system boots up.
-   * This function allows the flag to be saved with the desired value.
-   *
-   * \see readShowBootLogoFlag() bootLogo()
-   */
-  void writeShowBootLogoFlag(bool val);
-
-  /** \brief
-   * Read the "Show Unit Name" flag in system EEPROM.
-   *
-   * \return `true` if the flag is set to indicate that the unit name should
-   * be displayed. `false` if the flag is set to not display the unit name.
-   *
-   * \details
-   * The "Show Unit Name" flag is used to determine whether the system
-   * unit name is to be displayed at the end of the boot logo sequence.
-   * This function returns the value of this flag.
-   *
-   * \see writeShowUnitNameFlag() writeUnitName() readUnitName()
-   * DotMG::bootLogoExtra()
-   */
-  bool readShowUnitNameFlag();
-
-  /** \brief
-   * Write the "Show Unit Name" flag in system EEPROM.
-   *
-   * \param val If `true` the flag is set to indicate that the unit name should
-   * be displayed. If `false` the flag is set to not display the unit name.
-   *
-   * \details
-   * The "Show Unit Name" flag is used to determine whether the system
-   * unit name is to be displayed at the end of the boot logo sequence.
-   * This function allows the flag to be saved with the desired value.
-   *
-   * \see readShowUnitNameFlag() writeUnitName() readUnitName()
-   * DotMG::bootLogoExtra()
-   */
-  void writeShowUnitNameFlag(bool val);
-
-  /** \brief
-   * Read the "Show LEDs with boot logo" flag in system EEPROM.
-   *
-   * \return `true` if the flag is set to indicate that the RGB LEDs should be
-   * flashed. `false` if the flag is set to leave the LEDs off.
-   *
-   * \details
-   * The "Show LEDs with boot logo" flag is used to determine whether the
-   * RGB LEDs should be flashed in sequence while the boot logo is being
-   * displayed. This function returns the value of this flag.
-   *
-   * \see writeShowBootLogoLEDsFlag()
-   */
-  bool readShowBootLogoLEDsFlag();
-
-  /** \brief
-   * Write the "Show LEDs with boot logo" flag in system EEPROM.
-   *
-   * \param val If `true` the flag is set to indicate that the RGB LEDs should
-   * be flashed. If `false` the flag is set to leave the LEDs off.
-   *
-   * \details
-   * The "Show LEDs with boot logo" flag is used to determine whether the
-   * RGB LEDs should be flashed in sequence while the boot logo is being
-   * displayed. This function allows the flag to be saved with the desired
-   * value.
-   *
-   * \see readShowBootLogoLEDsFlag()
-   */
-  void writeShowBootLogoLEDsFlag(bool val);
-
-  /** \brief
-   * A counter which is incremented once per frame.
+   * Returns the current frame counter value.
    *
    * \details
    * This counter is incremented once per frame when using the `nextFrame()`
@@ -1033,13 +691,13 @@ class DotMGBase : public DotMGCore
    * \code{.cpp}
    * // move for 10 frames when right button is pressed, if not already moving
    * if (!moving) {
-   *   if (arduboy.justPressed(RIGHT_BUTTON)) {
-   *     endMoving = arduboy.frameCount + 10;
+   *   if (dmg.justPressed(RIGHT_BUTTON)) {
+   *     endMoving = dmg.frameCount + 10;
    *     moving = true;
    *   }
    * } else {
    *   movePlayer();
-   *   if (arduboy.frameCount == endMoving) {
+   *   if (dmg.frameCount == endMoving) {
    *     moving = false;
    *   }
    * }
@@ -1051,44 +709,31 @@ class DotMGBase : public DotMGCore
    *
    * \see nextFrame() everyXFrames()
    */
-  uint16_t frameCount;
-
-// TODO: Make private?
-  /** \brief
-   * The display buffer array in RAM.
-   *
-   * \details
-   * The display buffer (also known as the screen buffer) contains an
-   * image bitmap of the desired contents of the display, which is written
-   * to the display using the `display()` function. The drawing functions of
-   * this library manipulate the contents of the display buffer. A sketch can
-   * also access the display buffer directly.
-   *
-   * \see getBuffer()
-   */
-  static uint8_t sBuffer[(HEIGHT*WIDTH)/8];  // TODO
+  unsigned long frameCount() { return frameCount; }
 
  protected:
-  // helper function for sound enable/disable system control
-  void sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal);
-
-  // functions passed to bootLogoShell() to draw the logo
-  static void drawLogoBitmap(int16_t y);
-  static void drawLogoCompressed(int16_t y);
-  static void drawLogoSpritesSelfMasked(int16_t y);
-  static void drawLogoSpritesOverwrite(int16_t y);
-  static void drawLogoSpritesBSelfMasked(int16_t y);
-  static void drawLogoSpritesBOverwrite(int16_t y);
-
   // For button handling
+
   uint8_t currentButtonState;
   uint8_t previousButtonState;
 
   // For frame funcions
+
+  unsigned long frameCount;
   uint8_t eachFrameMillis;
   uint8_t thisFrameStart;
   bool justRendered;
   uint8_t lastFrameDurationMs;
+
+  // Helpers
+
+  // Draw one or more "corners" of a circle.
+  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color color = COLOR_WHITE);
+
+  // Draw one or both vertical halves of a filled-in circle or rounded rectangle edge.
+  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, uint16_t color = COLOR_WHITE);
+
+  void swap(int16_t& a, int16_t& b);
 };
 
 
@@ -1097,26 +742,15 @@ class DotMGBase : public DotMGCore
 //==============================
 
 /** \brief
- * The main functions provided for writing sketches for the Arduboy,
+ * The main functions provided for writing sketches for the dotMG,
  * _including_ text output.
  *
  * \details
  * This class is derived from DotMGBase. It provides text output functions
  * in addition to all the functions inherited from DotMGBase.
- *
- * \note
- * A friend class named _DotMGEx_ is declared by this class. The intention
- * is to allow a sketch to create an _DotMGEx_ class which would have access
- * to the private and protected members of the DotMG class. It is hoped
- * that this may eliminate the need to create an entire local copy of the
- * library, in order to extend the functionality, in most circumstances.
- *
- * \see DotMGBase
  */
 class DotMG : public Print, public DotMGBase
 {
- friend class DotMGEx;
-
  public:
   DotMG();
 
@@ -1140,69 +774,16 @@ class DotMG : public Print, public DotMGBase
    * \code{.cpp}
    * int value = 42;
    *
-   * arduboy.println("Hello World"); // Prints "Hello World" and then moves the
+   * dmg.println("Hello World"); // Prints "Hello World" and then moves the
    *                                 // text cursor to the start of the next line
-   * arduboy.print(value);  // Prints "42"
-   * arduboy.print('\n');   // Moves the text cursor to the start of the next line
-   * arduboy.print(78, HEX) // Prints "4E" (78 in hexadecimal)
+   * dmg.print(value);  // Prints "42"
+   * dmg.print('\n');   // Moves the text cursor to the start of the next line
+   * dmg.print(78, HEX) // Prints "4E" (78 in hexadecimal)
    * \endcode
    *
    * \see DotMG::write()
    */
   using Print::write;
-
-  /** \brief
-   * Display the boot logo sequence using printed text instead of a bitmap.
-   *
-   * \details
-   * This function can be called by a sketch after `boot()` as an alternative
-   * to `bootLogo()`.
-   *
-   * The Arduboy logo scrolls down from the top of the screen to the center
-   * while the RGB LEDs light in sequence.
-   *
-   * This function is the same as `bootLogo()` except the logo is printed as
-   * text instead of being rendered as a bitmap. It can be used to save some
-   * code space in a case where the sketch is using the Print class functions
-   * to display text. However, the logo will not look as good when printed as
-   * text as it does with the bitmap used by `bootLogo()`.
-   *
-   * If the RIGHT button is pressed while the logo is scrolling down,
-   * the boot logo sequence will be aborted. This can be useful for
-   * developers who wish to quickly start testing, or anyone else who is
-   * impatient and wants to go straight to the actual sketch.
-   *
-   * If the SYS_FLAG_SHOW_LOGO_LEDS flag in system EEPROM is cleared,
-   * the RGB LEDs will not be flashed during the logo display sequence.
-   *
-   * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
-   * will return without executing the logo display sequence.
-   *
-   * \see bootLogo() boot() DotMG::bootLogoExtra()
-   */
-  void bootLogoText();
-
-  /** \brief
-   * Show the unit name at the bottom of the boot logo screen.
-   *
-   * \details
-   * This function is called by `bootLogoShell()` and `bootLogoText()`.
-   *
-   * If a unit name has been saved in system EEPROM, it will be displayed at
-   * the bottom of the screen. This function pauses for a short time to allow
-   * the name to be seen.
-   *
-   * If the SYS_FLAG_UNAME flag in system EEPROM is cleared, this function
-   * will return without showing the unit name or pausing.
-   *
-   * \note
-   * This function would not normally be called directly from within a sketch
-   * itself.
-   *
-   * \see readUnitName() writeUnitName() bootLogo() bootLogoShell()
-   * bootLogoText() writeShowUnitNameFlag() begin()
-   */
-  virtual void bootLogoExtra();
 
   /** \brief
    * Write a single ASCII character at the current text cursor location.
@@ -1212,7 +793,7 @@ class DotMG : public Print, public DotMGBase
    * \return The number of characters written (will always be 1).
    *
    * \details
-   * This is the Arduboy implemetation of the Arduino virtual `write()`
+   * This is the dotMG implemetation of the Arduino virtual `write()`
    * function. The single ASCII character specified is written to the
    * the screen buffer at the current text cursor. The text cursor is then
    * moved to the next character position in the screen buffer. This new cursor
@@ -1258,7 +839,7 @@ class DotMG : public Print, public DotMGBase
    *
    * \see Print write() setTextColor() setTextBackground() setTextSize()
    */
-  void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size);
+  void drawChar(int16_t x, int16_t y, unsigned char c, Color color, uint16_t bg, uint8_t size);
 
   /** \brief
    * Set the location of the text cursor.

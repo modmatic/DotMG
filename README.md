@@ -71,7 +71,7 @@ To initialize the library, you must call its *begin()* function. This is usually
 ```cpp
 void setup()
 {
-  arduboy.begin();
+  dmg.begin();
   // more setup code follows, if required
 }
 ```
@@ -88,7 +88,7 @@ Sample sketches have been included with the library as examples of how to use it
 
 `File > Examples > DotMG`
 
-More information on writing sketches for the Arduboy can be found in the [Arduboy Community Forum](http://community.arduboy.com/).
+More information on writing sketches for the Arduboy can be found in the [Arduboy Community Forum](http://community.dmg.com/).
 
 ### Using EEPROM in a sketch
 
@@ -108,8 +108,8 @@ Example:
 DotMG arduboy;
 
 // DotMGAudio functions can be called as follows:
-  arduboy.audio.on();
-  arduboy.audio.off();
+  dmg.audio.on();
+  dmg.audio.off();
 ```
 
 ### Simple tone generation
