@@ -1,39 +1,37 @@
 /**
  * @file DotMGCore.cpp
  * \brief
- * The DotMGCore class for Arduboy hardware initilization and control.
+ * The DotMGCore class for hardware initilization and control.
  */
 
 #include "DotMGCore.h"
 #include <SPI.h>
 
-static uint16_t borderLineColor = COLOR_GRAY;
-static uint16_t borderFillColor = COLOR_BLACK;
-static uint16_t pixelColor = COLOR_WHITE;
-static uint16_t bgColor = COLOR_BLACK;
-static uint8_t MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
-static uint8_t LEDs[] = {0, 0, 0};
-static bool inverted = false;
-static bool borderDrawn = false;
-const uint8_t borderInnerGap = 1;
-const uint8_t borderWindowWidth = WIDTH+borderInnerGap*2;
-const uint8_t borderWindowHeight = HEIGHT+borderInnerGap*2;
+static const int frameBufLen = WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
 
-#define BYTES_FOR_REGION(width, height) ((width)*(height)*12/8)  // 12 bits/px, 8 bits/byte
-static const int frameBufLen = BYTES_FOR_REGION(WIDTH, HEIGHT);
-static uint8_t *frameBuf = new uint8_t[frameBufLen];
-static volatile bool dmaBusy;
+static uint8_t MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
+static bool inverted = false;
 
 // Forward declarations
-static void setWriteRegion(uint8_t x = (DISP_WIDTH-WIDTH)/2, uint8_t y = (DISP_HEIGHT-HEIGHT)/2, uint8_t width = WIDTH, uint8_t height = HEIGHT);
-static void drawRegion(uint16_t color, uint8_t x = (DISP_WIDTH-WIDTH)/2, uint8_t y = (DISP_HEIGHT-HEIGHT)/2, uint8_t width = WIDTH, uint8_t height = HEIGHT);
-static void drawBorder();
-static void drawBorderFill();
-static void drawBorderLines();
-static void drawBorderGap();
-static void drawLEDs();
+
+static void bootPins();
+static void bootSPI();
+static void bootDisplay();
+
+static void displayDataMode();
+static void displayCommandMode();
+static void sendDisplayCommand(uint8_t command);
+
+static void beginDisplaySPI();
+static void endDisplaySPI();
+static void setWriteRegion();
+
+// DMA
+
+static volatile bool dmaBusy;
 static void initDMA();
-static void startDMA(uint8_t *data, uint16_t n);
+static void DMATransfer(uint8_t *data, uint16_t n);
+
 
 DotMGCore::DotMGCore() { }
 
@@ -45,7 +43,7 @@ void DotMGCore::boot()
   bootPowerSaving();
 }
 
-void DotMGCore::bootPins()
+void bootPins()
 {
   pinMode(PIN_BUTTON_A, INPUT_PULLUP);
   pinMode(PIN_BUTTON_B, INPUT_PULLUP);
@@ -57,7 +55,13 @@ void DotMGCore::bootPins()
   pinMode(PIN_BUTTON_SELECT, INPUT_PULLUP);
 }
 
-void DotMGCore::bootDisplay()
+void bootSPI()
+{
+  SPI.begin();
+  initDMA();
+}
+
+void bootDisplay()
 {
   pinMode(PIN_DISP_SS, OUTPUT);
   pinMode(PIN_DISP_DC, OUTPUT);
@@ -66,196 +70,73 @@ void DotMGCore::bootDisplay()
   beginDisplaySPI();
 
   sendDisplayCommand(ST77XX_SWRESET);  // Software reset
-  delayShort(150);
+  delay(150);
 
   sendDisplayCommand(ST77XX_SLPOUT);  // Bring out of sleep mode
-  delayShort(150);
+  delay(150);
 
   sendDisplayCommand(ST7735_FRMCTR1);  // Framerate ctrl - normal mode
-  SPITransfer(0x01);               // Rate = fosc/(1x2+40) * (LINE+2C+2D)
-  SPITransfer(0x2C);
-  SPITransfer(0x2D);
+  SPI.transfer(0x01);               // Rate = fosc/(1x2+40) * (LINE+2C+2D)
+  SPI.transfer(0x2C);
+  SPI.transfer(0x2D);
 
   sendDisplayCommand(ST77XX_MADCTL);  // Set initial orientation
-  SPITransfer(MADCTL);
+  SPI.transfer(MADCTL);
 
   sendDisplayCommand(ST77XX_COLMOD);  // Set color mode (12-bit)
-  SPITransfer(0x03);
+  SPI.transfer(0x03);
 
   sendDisplayCommand(ST7735_GMCTRP1);  // Gamma Adjustments (pos. polarity)
-  SPITransfer(0x02);
-  SPITransfer(0x1c);
-  SPITransfer(0x07);
-  SPITransfer(0x12);
-  SPITransfer(0x37);
-  SPITransfer(0x32);
-  SPITransfer(0x29);
-  SPITransfer(0x2D);
-  SPITransfer(0x29);
-  SPITransfer(0x25);
-  SPITransfer(0x2B);
-  SPITransfer(0x39);
-  SPITransfer(0x00);
-  SPITransfer(0x01);
-  SPITransfer(0x03);
-  SPITransfer(0x10);
+  SPI.transfer(0x02);
+  SPI.transfer(0x1c);
+  SPI.transfer(0x07);
+  SPI.transfer(0x12);
+  SPI.transfer(0x37);
+  SPI.transfer(0x32);
+  SPI.transfer(0x29);
+  SPI.transfer(0x2D);
+  SPI.transfer(0x29);
+  SPI.transfer(0x25);
+  SPI.transfer(0x2B);
+  SPI.transfer(0x39);
+  SPI.transfer(0x00);
+  SPI.transfer(0x01);
+  SPI.transfer(0x03);
+  SPI.transfer(0x10);
 
   sendDisplayCommand(ST7735_GMCTRN1);  // Gamma Adjustments (neg. polarity)
-  SPITransfer(0x03);
-  SPITransfer(0x1D);
-  SPITransfer(0x07);
-  SPITransfer(0x06);
-  SPITransfer(0x2E);
-  SPITransfer(0x2C);
-  SPITransfer(0x29);
-  SPITransfer(0x2D);
-  SPITransfer(0x2E);
-  SPITransfer(0x2E);
-  SPITransfer(0x37);
-  SPITransfer(0x3F);
-  SPITransfer(0x00);
-  SPITransfer(0x00);
-  SPITransfer(0x02);
-  SPITransfer(0x10);
+  SPI.transfer(0x03);
+  SPI.transfer(0x1D);
+  SPI.transfer(0x07);
+  SPI.transfer(0x06);
+  SPI.transfer(0x2E);
+  SPI.transfer(0x2C);
+  SPI.transfer(0x29);
+  SPI.transfer(0x2D);
+  SPI.transfer(0x2E);
+  SPI.transfer(0x2E);
+  SPI.transfer(0x37);
+  SPI.transfer(0x3F);
+  SPI.transfer(0x00);
+  SPI.transfer(0x00);
+  SPI.transfer(0x02);
+  SPI.transfer(0x10);
 
   // Clear entire display
   setWriteRegion(0, 0, DISP_WIDTH, DISP_HEIGHT);
   for (int i = 0; i < DISP_WIDTH*DISP_HEIGHT/2; i++) {
-    SPITransfer(bgColor >> 4);
-    SPITransfer(((bgColor & 0xF) << 4) | (bgColor >> 8));
-    SPITransfer(bgColor);
+    SPI.transfer(bgColor >> 4);
+    SPI.transfer(((bgColor & 0xF) << 4) | (bgColor >> 8));
+    SPI.transfer(bgColor);
   }
 
   sendDisplayCommand(ST77XX_DISPON); //  Turn screen on
-  delayShort(100);
+  delay(100);
 
   endDisplaySPI();
 
   drawBorder();
   blank();
-}
-
-void DotMGCore::displayDataMode()
-{
-  *portOutputRegister(IO_PORT) |= MASK_DISP_DC;
-}
-
-void DotMGCore::displayCommandMode()
-{
-  *portOutputRegister(IO_PORT) &= ~MASK_DISP_DC;
-}
-
-// Initialize the SPI interface for the display
-void DotMGCore::bootSPI()
-{
-  SPI.begin();
-  initDMA();
-}
-
-void DotMGCore::beginDisplaySPI()
-{
-  *portOutputRegister(IO_PORT) &= ~MASK_DISP_SS;
-  SPI.beginTransaction(SPI_SETTINGS);
-}
-
-void DotMGCore::endDisplaySPI()
-{
-  SPI.endTransaction();
-  *portOutputRegister(IO_PORT) |= MASK_DISP_SS;
-}
-
-void DotMGCore::SPITransfer(uint8_t data)
-{
-  SPI.transfer(data);
-}
-
-void DotMGCore::safeMode()
-{
-  if (buttonsState() == UP_BUTTON)
-  {
-    digitalWriteRGB(RED_LED, RGB_ON);
-    while (true);
-  }
-}
-
-/* Power Management */
-
-// Shut down the display
-void DotMGCore::displayOff()
-{
-  beginDisplaySPI();
-  sendDisplayCommand(ST77XX_SLPIN);
-  endDisplaySPI();
-  delayShort(150);
-}
-
-// Restart the display after a displayOff()
-void DotMGCore::displayOn()
-{
-  beginDisplaySPI();
-  sendDisplayCommand(ST77XX_SLPOUT);
-  endDisplaySPI();
-  delayShort(150);
-}
-
-
-/* Drawing */
-
-uint16_t DotMGCore::getPixelColor()
-{
-  return pixelColor;
-}
-
-void DotMGCore::setPixelColor(uint16_t color)
-{
-  pixelColor = color;
-}
-
-uint16_t DotMGCore::getBackgroundColor()
-{
-  return bgColor;
-}
-
-void DotMGCore::setBackgroundColor(uint16_t color)
-{
-  bgColor = color;
-
-  if (borderDrawn)
-    drawBorderGap();
-}
-
-uint16_t DotMGCore::getBorderLineColor()
-{
-  return borderLineColor;
-}
-
-void DotMGCore::setBorderLineColor(uint16_t color)
-{
-  borderLineColor = color;
-
-  if (borderDrawn)
-    drawBorderLines();
-}
-
-uint16_t DotMGCore::getBorderFillColor()
-{
-  return borderFillColor;
-}
-
-void DotMGCore::setBorderFillColor(uint16_t color)
-{
-  borderFillColor = color;
-
-  if (borderDrawn)
-    drawBorderFill();
-}
-
-void DotMGCore::setColorTheme(Theme theme)
-{
-  setPixelColor(theme.pixelColor);
-  setBackgroundColor(theme.backgroundColor);
-  setBorderLineColor(theme.borderLineColor);
-  setBorderFillColor(theme.borderFillColor);
 }
 
 void DotMGCore::paintScreen(const uint8_t *image)
@@ -266,135 +147,24 @@ void DotMGCore::paintScreen(const uint8_t *image)
 void DotMGCore::paintScreen(uint8_t image[], bool clear)
 {
   beginDisplaySPI();
-
-  int b = 0;
-  for (int y = 0; y < HEIGHT; y++)
-  {
-    int row = y >> 3;  // y / 8
-    uint8_t rowMask = bit(y & 0x7);  // y % 8
-    for (int x = 0; x < WIDTH; x += 2)
-    {
-      // Read next 2 pixels
-      uint8_t *img = image + (x + row*WIDTH);
-      uint16_t p0 = (img[0] & rowMask) ? pixelColor : bgColor;
-      uint16_t p1 = (img[1] & rowMask) ? pixelColor : bgColor;
-
-      // Write both as 12-bit pixels (3 bytes)
-      frameBuf[b++] = p0 >> 4;
-      frameBuf[b++] = ((p0 & 0xF) << 4) | (p1 >> 8);
-      frameBuf[b++] = p1;
-    }
-  }
-
   setWriteRegion();
-  startDMA(frameBuf, frameBufLen);
+  DMATransfer(image, frameBufLen);
 
   if (clear)
-    memset(image, 0, WIDTH*HEIGHT/8);
+    memset(image, 0, frameBufLen);
 }
 
 void DotMGCore::blank()
 {
-  drawRegion(bgColor);
-}
-
-void DotMGCore::sendDisplayCommand(uint8_t command)
-{
-  displayCommandMode();
-  SPITransfer(command);
-  displayDataMode();
-}
-
-static void setWriteRegion(uint8_t x, uint8_t y, uint8_t width, uint8_t height)
-{
-  DotMGCore::sendDisplayCommand(ST77XX_CASET);  //  Column addr set
-  DotMGCore::SPITransfer(0);
-  DotMGCore::SPITransfer(x);                    //  x start
-  DotMGCore::SPITransfer(0);
-  DotMGCore::SPITransfer(x + width - 1);        //  x end
-
-  DotMGCore::sendDisplayCommand(ST77XX_RASET);  //  Row addr set
-  DotMGCore::SPITransfer(0);
-  DotMGCore::SPITransfer(y);                    //  y start
-  DotMGCore::SPITransfer(0);
-  DotMGCore::SPITransfer(y + height - 1);       //  y end
-
-  DotMGCore::sendDisplayCommand(ST77XX_RAMWR);  //  Initialize write to display RAM
-}
-
-static void drawRegion(uint16_t color, uint8_t x, uint8_t y, uint8_t width, uint8_t height)
-{
-  DotMGCore::beginDisplaySPI();
-  int numBytes = BYTES_FOR_REGION(width, height);
-  setWriteRegion(x, y, width, height);
-  for (int i = 0; i < numBytes; i += 3)
+  beginDisplaySPI();
+  setWriteRegion();
+  for (int i = 0; i < frameBufLen; i ++)
   {
-    frameBuf[i] = color >> 4;
-    frameBuf[i+1] = ((color & 0xF) << 4) | (color >> 8);
-    frameBuf[i+2] = color;
+    SPI.transfer(0);
   }
-  startDMA(frameBuf, numBytes);
+  endDisplaySPI();
 }
 
-static uint8_t borderMarginX()
-{
-  return (DISP_WIDTH-borderWindowWidth)/2;
-}
-
-static uint8_t borderMarginY()
-{
-  return (DISP_HEIGHT-borderWindowHeight)/2;
-}
-
-// Note: this function reuses frameBuf since numBytes should always be less than frameBufLen
-static void drawBorderFill()
-{
-  const uint8_t marginX = borderMarginX();
-  const uint8_t marginY = borderMarginY();
-  int numBytes;
-
-  drawRegion(borderFillColor, 0, 0, DISP_WIDTH, marginY-1);
-  drawRegion(borderFillColor, 0, DISP_HEIGHT-(marginY-1), DISP_WIDTH, marginY-1);
-  drawRegion(borderFillColor, 0, marginY-1, marginX-1, borderWindowHeight+4);
-  drawRegion(borderFillColor, DISP_WIDTH-(marginX-1), marginY-1, marginX-1, borderWindowHeight+4);
-}
-
-// Note: this function reuses frameBuf since numBytes should always be less than frameBufLen
-static void drawBorderLines()
-{
-  const uint8_t marginX = borderMarginX();
-  const uint8_t marginY = borderMarginY();
-  int numBytes;
-
-  drawRegion(borderLineColor, marginX-1, marginY-1, borderWindowWidth+2, 1);
-  drawRegion(borderLineColor, marginX-1, DISP_HEIGHT-marginY, borderWindowWidth+2, 1);
-  drawRegion(borderLineColor, marginX-1, marginY, 1, borderWindowHeight);
-  drawRegion(borderLineColor, DISP_WIDTH-marginX, marginY, 1, borderWindowHeight);
-}
-
-// Note: this function reuses frameBuf since numBytes should always be less than frameBufLen
-static void drawBorderGap()
-{
-  const uint8_t marginX = borderMarginX();
-  const uint8_t marginY = borderMarginY();
-  int numBytes;
-
-  drawRegion(bgColor, marginX, marginY, borderWindowWidth, borderInnerGap);
-  drawRegion(bgColor, marginX, DISP_HEIGHT-marginY-borderInnerGap, borderWindowWidth, borderInnerGap);
-  drawRegion(bgColor, marginX, marginY+borderInnerGap, borderInnerGap, HEIGHT);
-  drawRegion(bgColor, DISP_WIDTH-marginX-borderInnerGap, marginY+borderInnerGap, borderInnerGap, HEIGHT);
-}
-
-static void drawBorder()
-{
-  drawBorderFill();
-  drawBorderLines();
-  drawBorderGap();
-
-  borderDrawn = true;
-}
-
-// invert the display or set to normal
 void DotMGCore::invert(bool inverse)
 {
   if (inverse == inverted)
@@ -407,17 +177,6 @@ void DotMGCore::invert(bool inverse)
   setBackgroundColor(tmp);
 }
 
-// turn all display pixels on, ignoring buffer contents
-// or set to normal buffer display
-void DotMGCore::allPixelsOn(bool on)
-{
-  beginDisplaySPI();
-  sendDisplayCommand(on ? ST77XX_DISPOFF : ST77XX_DISPON);
-  endDisplaySPI();
-  delayShort(100);
-}
-
-// flip the display vertically or set to normal
 void DotMGCore::flipVertical(bool flipped)
 {
   if (flipped)
@@ -430,11 +189,10 @@ void DotMGCore::flipVertical(bool flipped)
   }
   beginDisplaySPI();
   sendDisplayCommand(ST77XX_MADCTL);
-  SPITransfer(MADCTL);
+  SPI.transfer(MADCTL);
   endDisplaySPI();
 }
 
-// flip the display horizontally or set to normal
 void DotMGCore::flipHorizontal(bool flipped)
 {
   if (flipped)
@@ -447,68 +205,33 @@ void DotMGCore::flipHorizontal(bool flipped)
   }
   beginDisplaySPI();
   sendDisplayCommand(ST77XX_MADCTL);
-  SPITransfer(MADCTL);
+  SPI.transfer(MADCTL);
   endDisplaySPI();
 }
 
-
-/* RGB LED */
-
-void DotMGCore::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
+void DotMGCore::allPixelsOn(bool on)
 {
-  LEDs[RED_LED] = red;
-  LEDs[GREEN_LED] = green;
-  LEDs[BLUE_LED] = blue;
-  drawLEDs();
+  beginDisplaySPI();
+  sendDisplayCommand(on ? ST77XX_DISPOFF : ST77XX_DISPON);
+  endDisplaySPI();
+  delay(100);
 }
 
-void DotMGCore::setRGBled(uint8_t color, uint8_t val)
+void DotMGCore::displayOff()
 {
-  LEDs[color] = val;
-  drawLEDs();
+  beginDisplaySPI();
+  sendDisplayCommand(ST77XX_SLPIN);
+  endDisplaySPI();
+  delay(150);
 }
 
-void DotMGCore::freeRGBled()
+void DotMGCore::displayOn()
 {
-  // NOP
+  beginDisplaySPI();
+  sendDisplayCommand(ST77XX_SLPOUT);
+  endDisplaySPI();
+  delay(150);
 }
-
-void DotMGCore::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
-{
-  LEDs[RED_LED] = (red == RGB_ON ? 0xFF : 0);
-  LEDs[GREEN_LED] = (green == RGB_ON ? 0xFF : 0);
-  LEDs[BLUE_LED] = (blue == RGB_ON ? 0xFF : 0);
-  drawLEDs();
-}
-
-void DotMGCore::digitalWriteRGB(uint8_t color, uint8_t val)
-{
-  LEDs[color] = (val == RGB_ON ? 0xFF : 0);
-  drawLEDs();
-}
-
-static void drawLEDs()
-{
-  DotMGCore::beginDisplaySPI();
-
-  int numBytes = BYTES_FOR_REGION(DISP_WIDTH, 4);
-  setWriteRegion(0, (MADCTL & ST77XX_MADCTL_MX) ? 0 : DISP_HEIGHT-4, DISP_WIDTH, 4);
-
-  for (int i = 0; i < numBytes; i += 3)
-  {
-    const uint16_t color = color444::from8BitRGB(LEDs[RED_LED], LEDs[GREEN_LED], LEDs[BLUE_LED]);
-
-    // Reuse frameBuf since numBytes should be less than frameBufLen
-    frameBuf[i] = color >> 4;
-    frameBuf[i + 1] = ((color & 0xF) << 4) | (color >> 8);
-    frameBuf[i + 2] = color;
-  }
-
-  startDMA(frameBuf, numBytes);
-}
-
-
-/* Buttons */
 
 uint8_t DotMGCore::buttonsState()
 {
@@ -525,16 +248,50 @@ uint8_t DotMGCore::buttonsState()
   );
 }
 
-// delay in ms with 16 bit duration
-void DotMGCore::delayShort(uint16_t ms)
+void displayDataMode()
 {
-  delay((unsigned long)ms);
+  *portOutputRegister(IO_PORT) |= MASK_DISP_DC;
 }
 
-void DotMGCore::exitToBootloader()
+void displayCommandMode()
 {
-  noInterrupts();
-  while (true);
+  *portOutputRegister(IO_PORT) &= ~MASK_DISP_DC;
+}
+
+void sendDisplayCommand(uint8_t command)
+{
+  displayCommandMode();
+  SPI.transfer(command);
+  displayDataMode();
+}
+
+void beginDisplaySPI()
+{
+  *portOutputRegister(IO_PORT) &= ~MASK_DISP_SS;
+  SPI.beginTransaction(SPI_SETTINGS);
+}
+
+void endDisplaySPI()
+{
+  SPI.endTransaction();
+  *portOutputRegister(IO_PORT) |= MASK_DISP_SS;
+}
+
+static void setWriteRegion()
+{
+  sendDisplayCommand(ST77XX_CASET);  //  Column addr set
+  SPI.transfer(0);
+  SPI.transfer(0);                    //  x start
+  SPI.transfer(0);
+  SPI.transfer(WIDTH-1);              //  x end
+
+  sendDisplayCommand(ST77XX_RASET);  //  Row addr set
+  SPI.transfer(0);
+  SPI.transfer(0);                    //  y start
+  SPI.transfer(0);
+  SPI.transfer(HEIGHT-1);             //  y end
+
+  sendDisplayCommand(ST77XX_RAMWR);  //  Initialize write to display RAM
 }
 
 
@@ -569,7 +326,7 @@ static void initDMA()
   );
 }
 
-static void startDMA(uint8_t *data, uint16_t n)
+static void DMATransfer(uint8_t *data, uint16_t n)
 {
   dmaBusy = true;
 

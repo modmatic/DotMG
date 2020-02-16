@@ -38,22 +38,10 @@
 #define SELECT_BUTTON_BIT   7
 #define SELECT_BUTTON       bit(SELECT_BUTTON_BIT)
 
-// LED values
-
-#define RED_LED    0
-#define GREEN_LED  1
-#define BLUE_LED   2
-
-#define RGB_OFF    0
-#define RGB_ON     1
-
 // Display values
 
-#define WIDTH       128
-#define HEIGHT      64
-#define DISP_WIDTH   160
-#define DISP_HEIGHT  128
-
+#define WIDTH       160
+#define HEIGHT      128
 
 // ----- SPI/DMA configuration -----
 
@@ -176,103 +164,6 @@ class DotMGCore
     DotMGCore();
 
     /** \brief
-     * Put the display into data mode.
-     *
-     * \details
-     * When placed in data mode, data that is sent to the display will be
-     * considered as data to be displayed.
-     *
-     * \note
-     * This is a low level function that is not intended for general use in a
-     * sketch. It has been made public and documented for use by derived
-     * classes.
-     *
-     * \see displayCommandMode() SPITransfer()
-     */
-    void static displayDataMode();
-
-    /** \brief
-     * Put the display into command mode.
-     *
-     * \details
-     * When placed in command mode, data that is sent to the display will be
-     * treated as commands.
-     *
-     * \note
-     * This is a low level function that is not intended for general use in a
-     * sketch. It has been made public and documented for use by derived
-     * classes.
-     *
-     * \see displayDataMode() sendDisplayCommand() SPITransfer()
-     */
-    void static displayCommandMode();
-    inline void static LCDCommandMode() { displayCommandMode(); }  // For compatibility
-
-
-    /** \brief
-     * Initializes SPI transfers for the display.
-     *
-     * \details
-     * Lowers the CS pin of the display, allowing SPI data to be sent to it. Use before
-     * one or more calls to `SPITransfer()`. Other SPI devices cannot receive data while
-     * the CS pin of the display is low.
-     *
-     * \see endDisplaySPI() SPITransfer()
-     */
-    void static beginDisplaySPI();
-
-    /** \brief
-     * Terminates SPI transfers for the display.
-     *
-     * \details
-     * Raises the CS pin of the display, allowing other SPI devices to accept data.
-     * Use after one or mor calls to `SPITransfer()`.
-     *
-     * \see beginDisplaySPI() SPITransfer()
-     */
-    void static endDisplaySPI();
-
-    /** \brief
-     * Transfer a byte over SPI.
-     *
-     * \param data The byte to be sent over SPI.
-     *
-     * \details
-     * Transfer one byte over the SPI bus and wait for the transfer to
-     * complete.
-     */
-    void static SPITransfer(uint8_t data);
-
-    /** \brief
-     * Turn the display off.
-     *
-     * \details
-     * The display will clear and be put into a low power mode. This can be
-     * used to extend battery life when a game is paused or when a sketch
-     * doesn't require anything to be displayed for a relatively long period
-     * of time.
-     *
-     * \see displayOn()
-     */
-    void static displayOff();
-
-    /** \brief
-     * Turn the display on.
-     *
-     * \details
-     * Used to power up and reinitialize the display after calling
-     * `displayOff()`.
-     *
-     * \note
-     * The previous call to `displayOff()` will have caused the display's
-     * buffer contents to be lost. The display will have to be re-painted,
-     * which is usually done by calling `display()`.
-     *
-     * \see displayOff()
-     */
-    void static displayOn();
-
-    /** \brief
      * Get the width of the display in pixels.
      *
      * \return The width of the display in pixels.
@@ -285,21 +176,6 @@ class DotMGCore
      * \return The height of the display in pixels.
      */
     constexpr uint8_t static height() { return HEIGHT; }
-
-    /** \brief
-     * Get the current state of all buttons as a bitmask.
-     *
-     * \return A bitmask of the state of all the buttons.
-     *
-     * \details
-     * The returned mask contains a bit for each button. For any pressed button,
-     * its bit will be 1. For released buttons their associated bits will be 0.
-     *
-     * The following defined mask values should be used for the buttons:
-     *
-     * A_BUTTON, B_BUTTON, UP_BUTTON, DOWN_BUTTON, LEFT_BUTTON, RIGHT_BUTTON, START_BUTTON, SELECT_BUTTON
-     */
-    uint8_t static buttonsState();
 
     /** \brief
      * Paints an entire image directly to the display from program memory.
@@ -315,7 +191,7 @@ class DotMGCore
      * row, to the bottom right. The size of the array must exactly match the
      * number of pixels in the display area.
      */
-    void static paintScreen(const uint8_t *image);
+    static void paintScreen(const uint8_t *image);
 
     /** \brief
      * Paints an entire image directly to the display from an array in RAM.
@@ -337,7 +213,7 @@ class DotMGCore
      * If parameter `clear` is set to `true` the RAM array will be cleared to
      * zeros after its contents are written to the display.
      */
-    void static paintScreen(uint8_t image[], bool clear = false);
+    static void paintScreen(uint8_t image[], bool clear = false);
 
     /** \brief
      * Blank the display screen by setting all pixels off.
@@ -346,7 +222,7 @@ class DotMGCore
      * All pixels on the screen will be written with a value of 0 to turn
      * them off.
      */
-    void static blank();
+    static void blank();
 
     /** \brief
      * Swap pixel and background colors, or set back to normal.
@@ -361,7 +237,43 @@ class DotMGCore
      * until it is set back to non-inverted mode by calling this function with
      * `false`.
      */
-    void static invert(bool inverse);
+    static void invert(bool inverse);
+
+    /** \brief
+     * Flip the display vertically or set it back to normal.
+     *
+     * \param flipped `true` will set vertical flip mode. `false` will set
+     * normal vertical orientation.
+     *
+     * \details
+     * Calling this function with a value of `true` will cause the Y coordinate
+     * to start at the bottom edge of the display instead of the top,
+     * effectively flipping the display vertically.
+     *
+     * Once in vertical flip mode, it will remain this way until normal
+     * vertical mode is set by calling this function with a value of `false`.
+     *
+     * \see flipHorizontal()
+     */
+    static void flipVertical(bool flipped);
+
+    /** \brief
+     * Flip the display horizontally or set it back to normal.
+     *
+     * \param flipped `true` will set horizontal flip mode. `false` will set
+     * normal horizontal orientation.
+     *
+     * \details
+     * Calling this function with a value of `true` will cause the X coordinate
+     * to start at the left edge of the display instead of the right,
+     * effectively flipping the display horizontally.
+     *
+     * Once in horizontal flip mode, it will remain this way until normal
+     * horizontal mode is set by calling this function with a value of `false`.
+     *
+     * \see flipVertical()
+     */
+    static void flipHorizontal(bool flipped);
 
     /** \brief
      * Turn all display pixels on or display the buffer contents.
@@ -382,220 +294,55 @@ class DotMGCore
      *
      * \see invert()
      */
-    void static allPixelsOn(bool on);
+    static void allPixelsOn(bool on);
 
     /** \brief
-     * Flip the display vertically or set it back to normal.
-     *
-     * \param flipped `true` will set vertical flip mode. `false` will set
-     * normal vertical orientation.
+     * Turn the display off.
      *
      * \details
-     * Calling this function with a value of `true` will cause the Y coordinate
-     * to start at the bottom edge of the display instead of the top,
-     * effectively flipping the display vertically.
+     * The display will clear and be put into a low power mode. This can be
+     * used to extend battery life when a game is paused or when a sketch
+     * doesn't require anything to be displayed for a relatively long period
+     * of time.
      *
-     * Once in vertical flip mode, it will remain this way until normal
-     * vertical mode is set by calling this function with a value of `false`.
-     *
-     * \see flipHorizontal()
+     * \see displayOn()
      */
-    void static flipVertical(bool flipped);
+    static void displayOff();
 
     /** \brief
-     * Flip the display horizontally or set it back to normal.
-     *
-     * \param flipped `true` will set horizontal flip mode. `false` will set
-     * normal horizontal orientation.
+     * Turn the display on.
      *
      * \details
-     * Calling this function with a value of `true` will cause the X coordinate
-     * to start at the left edge of the display instead of the right,
-     * effectively flipping the display horizontally.
-     *
-     * Once in horizontal flip mode, it will remain this way until normal
-     * horizontal mode is set by calling this function with a value of `false`.
-     *
-     * \see flipVertical()
-     */
-    void static flipHorizontal(bool flipped);
-
-    /** \brief
-     * Send a single command byte to the display.
-     *
-     * \param command The command byte to send to the display.
-     *
-     * \details
-     * The display will be set to command mode then the specified command
-     * byte will be sent. The display will then be set to data mode.
-     * Multi-byte commands can be sent by calling this function multiple times.
+     * Used to power up and reinitialize the display after calling
+     * `displayOff()`.
      *
      * \note
-     * Sending improper commands to the display can place it into invalid or
-     * unexpected states, possibly even causing physical damage.
+     * The previous call to `displayOff()` will have caused the display's
+     * buffer contents to be lost. The display will have to be re-painted,
+     * which is usually done by calling `display()`.
+     *
+     * \see displayOff()
      */
-    void static sendDisplayCommand(uint8_t command);
-    inline void static sendLCDCommand(uint8_t command) { sendDisplayCommand(command); }  // For compatibility
+    static void displayOn();
 
     /** \brief
-     * Set the light output of the RGB LED.
+     * Get the current state of all buttons as a bitmask.
      *
-     * \param red,green,blue The brightness value for each LED.
+     * \return A bitmask of the state of all the buttons.
      *
      * \details
-     * The RGB LED is actually individual red, green and blue LEDs placed
-     * very close together in a single package. By setting the brightness of
-     * each LED, the RGB LED can show various colors and intensities.
-     * The brightness of each LED can be set to a value from 0 (fully off)
-     * to 255 (fully on).
+     * The returned mask contains a bit for each button. For any pressed button,
+     * its bit will be 1. For released buttons their associated bits will be 0.
      *
-     * \see setRGBled(uint8_t, uint8_t) digitalWriteRGB() freeRGBled()
+     * The following defined mask values should be used for the buttons:
+     *
+     * `A_BUTTON`, `B_BUTTON`, `UP_BUTTON`, `DOWN_BUTTON`, `LEFT_BUTTON`,
+     * `RIGHT_BUTTON`, `START_BUTTON`, `SELECT_BUTTON`
      */
-    void static setRGBled(uint8_t red, uint8_t green, uint8_t blue);
-
-    /** \brief
-     * Set the brightness of one of the RGB LEDs without affecting the others.
-     *
-     * \param color The name of the LED to set. The value given should be one
-     * of RED_LED, GREEN_LED or BLUE_LED.
-     *
-     * \param val The brightness value for the LED, from 0 to 255.
-     *
-     * \note
-     * In order to use this function, the 3 parameter version must first be
-     * called at least once, in order to initialize the hardware.
-     *
-     * \details
-     * This 2 parameter version of the function will set the brightness of a
-     * single LED within the RGB LED without affecting the current brightness
-     * of the other two. See the description of the 3 parameter version of this
-     * function for more details on the RGB LED.
-     *
-     * \see setRGBled(uint8_t, uint8_t, uint8_t) digitalWriteRGB() freeRGBled()
-     */
-    void static setRGBled(uint8_t color, uint8_t val);
-
-
-    /** \brief
-     * Originally designed to relinquish analog control of the RGB LED. This is not
-     * needed for dotMG and has no implementation.
-     *
-     * \see digitalWriteRGB() setRGBled()
-     */
-    void static freeRGBled();
-
-    /** \brief
-     * Set the RGB LEDs digitally, to either fully on or fully off.
-     *
-     * \param red,green,blue Use value RGB_ON or RGB_OFF to set each LED.
-     *
-     * \details
-     * This 3 parameter version of the function will set each LED either on or off,
-     * to set the RGB LED to 7 different colors at their highest brightness or turn
-     * it off.
-     *
-     * The colors are as follows:
-     *
-     *     RED LED   GREEN_LED   BLUE_LED   COLOR
-     *     -------   ---------  --------    -----
-     *     RGB_OFF    RGB_OFF    RGB_OFF    OFF
-     *     RGB_OFF    RGB_OFF    RGB_ON     Blue
-     *     RGB_OFF    RGB_ON     RGB_OFF    Green
-     *     RGB_OFF    RGB_ON     RGB_ON     Cyan
-     *     RGB_ON     RGB_OFF    RGB_OFF    Red
-     *     RGB_ON     RGB_OFF    RGB_ON     Magenta
-     *     RGB_ON     RGB_ON     RGB_OFF    Yellow
-     *     RGB_ON     RGB_ON     RGB_ON     White
-     *
-     * \note
-     * \parblock
-     * Using the RGB LED in analog mode will prevent digital control of the
-     * LED. To restore the ability to control the LED digitally, use the
-     * `freeRGBled()` function.
-     * \endparblock
-     *
-     * \see digitalWriteRGB(uint8_t, uint8_t) setRGBled() freeRGBled()
-     */
-    void static digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue);
-
-    /** \brief
-     * Set one of the RGB LEDs digitally, to either fully on or fully off.
-     *
-     * \param color The name of the LED to set. The value given should be one
-     * of RED_LED, GREEN_LED or BLUE_LED.
-     *
-     * \param val Indicates whether to turn the specified LED on or off.
-     * The value given should be RGB_ON or RGB_OFF.
-     *
-     * \details
-     * This 2 parameter version of the function will set a single LED within
-     * the RGB LED either fully on or fully off. See the description of the
-     * 3 parameter version of this function for more details on the RGB LED.
-     *
-     * \see digitalWriteRGB(uint8_t, uint8_t, uint8_t) setRGBled() freeRGBled()
-     */
-    void static digitalWriteRGB(uint8_t color, uint8_t val);
-
-    /** \brief
-     * Initialize the Arduboy's hardware.
-     *
-     * \details
-     * This function initializes the display, buttons, etc.
-     *
-     * This function is called by begin() so isn't normally called within a
-     * sketch. However, in order to free up some code space, by eliminating
-     * some of the start up features, it can be called in place of begin().
-     * The functions that begin() would call after boot() can then be called
-     * to add back in some of the start up features, if desired.
-     * See the README file or documentation on the main page for more details.
-     *
-     * \see DotMGBase::begin()
-     */
-    void static boot();
-
-    /** \brief
-     * Disables current game and instead waits forever at a blank screen.
-     * Similarly to `flashlight()`, useful if you don't want your game to
-     * run while uploading.
-     *
-     * \details
-     * If the UP button is held when this function is entered, the RGB LED
-     * will be lit and the sketch will remain in a tight loop.
-     *
-     * It is intended to replace the `flashlight()` function when more
-     * program space is required. If possible, it is more desirable to use
-     * `flashlight()`, so that the actual flashlight feature isn't lost.
-     *
-     * \see DotMGBase::flashlight() boot()
-     */
-    void static safeMode();
-
-    /** \brief
-     * Delay for the number of milliseconds, specified as a 16 bit value.
-     *
-     * \param ms The delay in milliseconds.
-     *
-     * \details
-     * This function works the same as the Arduino `delay()` function except
-     * the provided value is 16 bits long, so the maximum delay allowed is
-     * 65535 milliseconds (about 65.5 seconds). Using this function instead
-     * of Arduino `delay()` will save a few bytes of code.
-     */
-    void static delayShort(uint16_t ms) __attribute__ ((noinline));
-
-    /** \brief
-     * This function was originally intented to allow USB uploads when USB code
-     * was eliminated on the original Arduboy. Since this isn't necessary on
-     * dotMG, it simply disables interrupts and waits forever.
-     */
-    void static exitToBootloader();
+    uint8_t static buttonsState();
 
   protected:
-    // internals
-    void static bootSPI();
-    void static bootDisplay();
-    void static bootPins();
-    void static bootPowerSaving() {}
+    static void boot();
 };
 
 #endif

@@ -23,19 +23,10 @@ allPixelsOn	KEYWORD2
 begin	KEYWORD2
 blank	KEYWORD2
 boot	KEYWORD2
-bootLogo	KEYWORD2
-bootLogoCompressed	KEYWORD2
-bootLogoShell	KEYWORD2
-bootLogoSpritesBOverwrite	KEYWORD2
-bootLogoSpritesBSelfMasked	KEYWORD2
-bootLogoSpritesOverwrite	KEYWORD2
-bootLogoSpritesSelfMasked	KEYWORD2
-bootLogoText	KEYWORD2
 buttonsState	KEYWORD2
 clear	KEYWORD2
 collide	KEYWORD2
 cpuLoad	KEYWORD2
-delayShort	KEYWORD2
 digitalWriteRGB	KEYWORD2
 display	KEYWORD2
 displayOff	KEYWORD2
@@ -101,20 +92,10 @@ setTextBackground	KEYWORD2
 setTextColor	KEYWORD2
 setTextSize	KEYWORD2
 setTextWrap	KEYWORD2
-SPITransfer	KEYWORD2
-SPItransfer	KEYWORD2
 systemButtons	KEYWORD2
 toggle	KEYWORD2
 waitNoButtons	KEYWORD2
 width	KEYWORD2
-writeShowBootLogoFlag	KEYWORD2
-writeShowUnitNameFlag	KEYWORD2
-writeUnitID	KEYWORD2
-writeUnitName	KEYWORD2
-setPixelColor	KEYWORD2
-getPixelColor	KEYWORD2
-setBackgroundColor	KEYWORD2
-getBackgroundColor	KEYWORD2
 
 # DotMGBeep classes
 freq	KEYWORD2

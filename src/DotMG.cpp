@@ -87,7 +87,7 @@ void DotMGBase::systemButtons()
     digitalWriteRGB(BLUE_LED, RGB_ON); // turn on blue LED
     sysCtrlSound(UP_BUTTON + B_BUTTON, GREEN_LED, 0xff);
     sysCtrlSound(DOWN_BUTTON + B_BUTTON, RED_LED, 0);
-    delayShort(200);
+    delay(200);
   }
 
   digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
@@ -97,10 +97,10 @@ void DotMGBase::sysCtrlSound(uint8_t buttons, uint8_t led, uint8_t eeVal)
 {
   if (pressed(buttons)) {
     digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off blue LED
-    delayShort(200);
+    delay(200);
     digitalWriteRGB(led, RGB_ON); // turn on "acknowledge" LED
     EEPROM.update(EEPROM_AUDIO_ON_OFF, eeVal);
-    delayShort(500);
+    delay(500);
     digitalWriteRGB(led, RGB_OFF); // turn off "acknowledge" LED
 
     while (pressed(buttons)) { } // Wait for button release
@@ -197,14 +197,14 @@ void DotMGBase::bootLogoShell(void (*drawLogo)(int16_t))
     display(CLEAR_BUFFER);
     (*drawLogo)(y); // call the function that actually draws the logo
     display();
-    delayShort(15);
+    delay(15);
   }
 
   if (showLEDs) {
     digitalWriteRGB(GREEN_LED, RGB_OFF);  // green LED off
     digitalWriteRGB(BLUE_LED, RGB_ON);    // blue LED on
   }
-  delayShort(400);
+  delay(400);
   digitalWriteRGB(BLUE_LED, RGB_OFF);
 
   bootLogoExtra();
@@ -216,7 +216,7 @@ void DotMGBase::bootLogoExtra() { }
 // wait for all buttons to be released
 void DotMGBase::waitNoButtons() {
   do {
-    delayShort(50); // simple button debounce
+    delay(50); // simple button debounce
   } while (buttonsState());
 }
 
@@ -1089,10 +1089,10 @@ void DotMG::bootLogoText()
     print(F("ARDUBOY"));
     textSize = 1;
     display();
-    delayShort(11);
+    delay(11);
   }
 
-  delayShort(400);
+  delay(400);
   bootLogoExtra();
 }
 
@@ -1108,7 +1108,7 @@ void DotMG::bootLogoExtra()
   }
 
   display();
-  delayShort(1000);
+  delay(1000);
 
   if (!readShowUnitNameFlag())
   {
@@ -1131,7 +1131,7 @@ void DotMG::bootLogoExtra()
     while (i < EEPROM_UNIT_NAME + ARDUBOY_UNIT_NAME_LEN);
 
     display();
-    delayShort(1000);
+    delay(1000);
   }
 }
 
