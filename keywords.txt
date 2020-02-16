@@ -1,13 +1,13 @@
 #######################################
-# Syntax Coloring Map For Arduboy2
+# Syntax Coloring Map For DotMG
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-Arduboy2	KEYWORD1
-Arduboy2Base	KEYWORD1
+DotMG	KEYWORD1
+DotMGBase	KEYWORD1
 BeepPin1	KEYWORD1
 BeepPin2	KEYWORD1
 Point	KEYWORD1
@@ -117,7 +117,7 @@ getPixelColor	KEYWORD2
 setBackgroundColor	KEYWORD2
 getBackgroundColor	KEYWORD2
 
-# Arduboy2Beep classes
+# DotMGBeep classes
 freq	KEYWORD2
 noTone	KEYWORD2
 timer	KEYWORD2
@@ -134,18 +134,11 @@ drawSelfMasked	KEYWORD2
 # Constants (LITERAL1)
 #######################################
 
-ARDUBOY_LIB_VER	LITERAL1
-
-ARDUBOY_UNIT_NAME_LEN	LITERAL1
-
-EEPROM_STORAGE_SPACE_START	LITERAL1
-
 HEIGHT	LITERAL1
 WIDTH	LITERAL1
 
-BLACK	LITERAL1
-WHITE	LITERAL1
-INVERT	LITERAL1
+COLOR_TRANS	LITERAL1
+COLOR_INVERT	LITERAL1
 
 CLEAR_BUFFER	LITERAL1
 
@@ -159,6 +152,3 @@ START_BUTTON	LITERAL1
 SELECT_BUTTON	LITERAL1
 
 PIN_SPEAKER	LITERAL1
-
-ARDUBOY_NO_USB	LITERAL1
-

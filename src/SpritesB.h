@@ -8,7 +8,7 @@
 #ifndef SpritesB_h
 #define SpritesB_h
 
-#include "Arduboy2DotMG.h"
+#include "DotMG.h"
 #include "SpritesCommon.h"
 
 /** \brief

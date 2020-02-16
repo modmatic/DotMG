@@ -1,15 +1,14 @@
 /**
- * @file Arduboy2CoreDotMG.h
+ * @file DotMGCore.h
  * \brief
- * The Arduboy2Core class for Arduboy hardware initilization and control.
+ * The DotMGCore class for dotMG hardware initilization and control.
  */
 
-#ifndef ARDUBOY2_CORE_DOTMG_H
-#define ARDUBOY2_CORE_DOTMG_H
+#ifndef DOTMG_CORE_H
+#define DOTMG_CORE_H
 
 #include <Arduino.h>
-#include "themes/themes.h"
-#include "themes/colors.h"
+#include "colors.h"
 
 // ----- Helpful values/macros -----
 
@@ -168,22 +167,22 @@
  * Lower level functions generally dealing directly with the hardware.
  *
  * \details
- * This class is inherited by Arduboy2Base and thus also Arduboy2, so wouldn't
+ * This class is inherited by DotMGBase and thus also DotMG, so wouldn't
  * normally be used directly by a sketch.
  *
  * \note
- * A friend class named _Arduboy2Ex_ is declared by this class. The intention
- * is to allow a sketch to create an _Arduboy2Ex_ class which would have access
- * to the private and protected members of the Arduboy2Core class. It is hoped
+ * A friend class named _DotMGEx_ is declared by this class. The intention
+ * is to allow a sketch to create an _DotMGEx_ class which would have access
+ * to the private and protected members of the DotMGCore class. It is hoped
  * that this may eliminate the need to create an entire local copy of the
  * library, in order to extend the functionality, in most circumstances.
  */
-class Arduboy2Core
+class DotMGCore
 {
-  friend class Arduboy2Ex;
+  friend class DotMGEx;
 
   public:
-    Arduboy2Core();
+    DotMGCore();
 
     /** \brief
      * Originally intended to save power on the original Arduboy. It is not
@@ -713,7 +712,7 @@ class Arduboy2Core
      * to add back in some of the start up features, if desired.
      * See the README file or documentation on the main page for more details.
      *
-     * \see Arduboy2Base::begin()
+     * \see DotMGBase::begin()
      */
     void static boot();
 
@@ -730,7 +729,7 @@ class Arduboy2Core
      * program space is required. If possible, it is more desirable to use
      * `flashlight()`, so that the actual flashlight feature isn't lost.
      *
-     * \see Arduboy2Base::flashlight() boot()
+     * \see DotMGBase::flashlight() boot()
      */
     void static safeMode();
 

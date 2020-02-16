@@ -1,90 +1,41 @@
 /**
- * @file Arduboy2DotMG.h
+ * @file DotMG.h
  * \brief
- * The Arduboy2Base and Arduboy2 classes and support objects and definitions.
+ * The DotMGBase and DotMG classes and support objects and definitions.
  */
 
-#ifndef ARDUBOY2_DOTMG_H
-#define ARDUBOY2_DOTMG_H
+#ifndef DOTMG_H
+#define DOTMG_H
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include "Arduboy2CoreDotMG.h"
-#include "Arduboy2BeepDotMG.h"
+#include "DotMGCore.h"
 #include "Sprites.h"
 #include "SpritesB.h"
 #include <Print.h>
+#include "DotMGAudio.h"
 
 /** \brief
- * Library version
+ * Color value to indicate pixels are to be transparent.
  *
  * \details
- * For a version number in the form of x.y.z the value of the define will be
- * ((x * 10000) + (y * 100) + (z)) as a decimal number.
- * So, it will read as xxxyyzz, with no leading zeros on x.
+ * Pixel value in current screen buffer will remain unchanged.
  *
- * A user program can test this value to conditionally compile based on the
- * library version. For example:
- *
- * \code{.cpp}
- * // If the library is version 2.1.0 or higher
- * #if ARDUBOY_LIB_VER >= 20100
- *   // ... code that make use of a new feature added to V2.1.0
- * #endif
- * \endcode
+ * \note
+ * Currently supported by any `DotMGBase::draw*()` method.
  */
-#define ARDUBOY_LIB_VER 00001
-
-// EEPROM settings
-#define ARDUBOY_UNIT_NAME_LEN 6 /**< The maximum length of the unit name string. */
-
-#define EEPROM_VERSION 0
-#define EEPROM_SYS_FLAGS 1
-#define EEPROM_AUDIO_ON_OFF 2
-#define EEPROM_UNIT_ID 8    // A uint16_t binary unit ID
-#define EEPROM_UNIT_NAME 10 // An up to 6 character unit name. Cannot contain
-                            // 0x00 or 0xFF. Lengths less than 6 are padded
-                            // with 0x00
-
-// EEPROM_SYS_FLAGS values
-#define SYS_FLAG_UNAME 0             // Display the unit name on the logo screen
-#define SYS_FLAG_UNAME_MASK          bit(SYS_FLAG_UNAME)
-#define SYS_FLAG_SHOW_LOGO 1         // Show the logo sequence during boot up
-#define SYS_FLAG_SHOW_LOGO_MASK      bit(SYS_FLAG_SHOW_LOGO)
-#define SYS_FLAG_SHOW_LOGO_LEDS 2    // Flash the RGB led during the boot logo
-#define SYS_FLAG_SHOW_LOGO_LEDS_MASK bit(SYS_FLAG_SHOW_LOGO_LEDS)
-
-/** \brief
- * Start of EEPROM storage space for sketches.
- *
- * \details
- * An area at the start of EEPROM is reserved for system use.
- * This define specifies the first EEPROM location past the system area.
- * Sketches can use locations from here to the end of EEPROM space.
- */
-#define EEPROM_STORAGE_SPACE_START 16
-
-// eeprom settings above are neded for audio
-#include "Arduboy2AudioDotMG.h"
-
-// If defined, it is safe to draw outside of the screen boundaries.
-// Pixels that would exceed the display limits will be ignored.
-#define PIXEL_SAFE_MODE
-
-// pixel colors
-#define BLACK 0  /**< Color value for an unlit pixel for draw functions. */
-#define WHITE 1  /**< Color value for a lit pixel for draw functions. */
+#define COLOR_TRANS 0x1000
 
 /** \brief
  * Color value to indicate pixels are to be inverted.
  *
  * \details
- * BLACK pixels will become WHITE and WHITE will become BLACK.
+ * Pixels will become their RGB complement.
  *
  * \note
- * Only function Arduboy2Base::drawBitmap() currently supports this value.
+ * Currently supported by any `DotMGBase::draw*()` method.
  */
-#define INVERT 2
+#define INVERT 0x2000
 
 #define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
 
@@ -100,7 +51,7 @@
  * The X and Y coordinates specify the top left corner of a rectangle with the
  * given width and height.
  *
- * \see Arduboy2Base::collide(Point, Rect) Arduboy2Base::collide(Rect, Rect)
+ * \see DotMGBase::collide(Point, Rect) DotMGBase::collide(Rect, Rect)
  *      Point
  */
 struct Rect
@@ -136,7 +87,7 @@ struct Rect
  * \details
  * The location of the point is given by X and Y coordinates.
  *
- * \see Arduboy2Base::collide(Point, Rect) Rect
+ * \see DotMGBase::collide(Point, Rect) Rect
  */
 struct Point
 {
@@ -158,268 +109,55 @@ struct Point
 };
 
 //==================================
-//========== Arduboy2Base ==========
+//========== DotMGBase ==========
 //==================================
 
 /** \brief
- * The main functions provided for writing sketches for the Arduboy,
+ * The main functions provided for writing sketches for the dotMG,
  * _minus_ text output.
  *
  * \details
- * This class in inherited by Arduboy2, so if text output functions are
- * required Arduboy2 should be used instead.
+ * This class in inherited by DotMG, so if text output functions are
+ * required DotMG should be used instead.
  *
  * \note
  * \parblock
- * An Arduboy2Audio class object named `audio` will be created by the
- * Arduboy2Base class, so there is no need for a sketch itself to create an
- * Arduboy2Audio object. Arduboy2Audio functions can be called using the
- * Arduboy2 or Arduboy2Base `audio` object.
- *
- * Example:
- *
- * \code{.cpp}
- * #include <Arduboy2DotMG.h>
- *
- * Arduboy2 arduboy;
- *
- * // Arduboy2Audio functions can be called as follows:
- *   arduboy.audio.on();
- *   arduboy.audio.off();
- * \endcode
- * \endparblock
- *
- * \note
- * \parblock
- * A friend class named _Arduboy2Ex_ is declared by this class. The intention
- * is to allow a sketch to create an _Arduboy2Ex_ class which would have access
- * to the private and protected members of the Arduboy2Base class. It is hoped
+ * A friend class named _DotMGEx_ is declared by this class. The intention
+ * is to allow a sketch to create an _DotMGEx_ class which would have access
+ * to the private and protected members of the DotMGBase class. It is hoped
  * that this may eliminate the need to create an entire local copy of the
  * library, in order to extend the functionality, in most circumstances.
  * \endparblock
  *
- * \see Arduboy2
+ * \see DotMG
  */
-class Arduboy2Base : public Arduboy2Core
+class DotMGBase : public DotMGCore
 {
- friend class Arduboy2Ex;
+ friend class DotMGEx;
 
  public:
-  Arduboy2Base();
+  DotMGBase();
 
   /** \brief
-   * An object created to provide audio control functions within this class.
-   *
-   * \details
-   * This object is created to eliminate the need for a sketch to create an
-   * Arduboy2Audio class object itself.
-   *
-   * \see Arduboy2Audio
-   */
-  Arduboy2Audio audio;
-
-  /** \brief
-   * Initialize the hardware, display the boot logo, provide boot utilities, etc.
+   * Initialize the hardware.
    *
    * \details
    * This function should be called once near the start of the sketch,
    * usually in `setup()`, before using any other functions in this class.
-   * It initializes the display, displays the boot logo, provides "flashlight"
-   * and system control features and initializes audio control.
-   *
-   * \note
-   * To free up some code space for use by the sketch, `boot()` can be used
-   * instead of `begin()` to allow the elimination of some of the things that
-   * aren't really required, such as displaying the boot logo.
-   *
-   * \see boot()
    */
   void begin();
-
-  /** \brief
-   * Turn the RGB LED and display fully on to act as a small flashlight/torch.
-   * Disables current game and instead waits forever. Similarly to `safeMode()`,
-   * useful if you don't want your game to run while uploading.
-   *
-   * \details
-   * Checks if the UP button is pressed and if so turns the RGB LED and all
-   * display pixels fully on. If the UP button is detected, this function
-   * does not exit. The Arduboy must be restarted after flashlight mode is used.
-   *
-   * This function is called by `begin()` and can be called by a sketch
-   * after `boot()`.
-   *
-   * \note
-   * \parblock
-   * For sketches that use `boot()` instead of `begin()`, it is recommended
-   * that a call to `flashlight()` be included after calling `boot()`. If
-   * program space is limited, `safeMode()` can be used instead of
-   * `flashlight()`.
-   * \endparblock
-   *
-   * \see begin() boot() safeMode()
-   */
-  void flashlight();
-
-  /** \brief
-   * Handle buttons held on startup for system control.
-   *
-   * \details
-   * This function is called by `begin()` and can be called by a sketch
-   * after `boot()`.
-   *
-   * Hold the B button when booting to enter system control mode.
-   * The B button must be held continuously to remain in this mode.
-   * Then, pressing other buttons will perform system control functions:
-   *
-   * - UP: Set "sound enabled" in EEPROM
-   * - DOWN: Set "sound disabled" (mute) in EEPROM
-   *
-   * \see begin() boot()
-   */
-  void systemButtons();
-
-  /** \brief
-   * Display the boot logo sequence using `drawBitmap()`.
-   *
-   * \details
-   * This function is called by `begin()` and can be called by a sketch
-   * after `boot()`.
-   *
-   * The Arduboy logo scrolls down from the top of the screen to the center
-   * while the RGB LEDs light in sequence.
-   *
-   * The `bootLogoShell()` helper function is used to perform the actual
-   * sequence. The documentation for `bootLogoShell()` provides details on how
-   * it operates.
-   *
-   * \see begin() boot() bootLogoShell() Arduboy2::bootLogoText()
-   */
-  void bootLogo();
-
-  /** \brief
-   * Display the boot logo sequence using `drawCompressed()`.
-   *
-   * \details
-   * This function can be called by a sketch after `boot()` as an alternative to
-   * `bootLogo()`. This may reduce code size if the sketch itself uses
-   * `drawCompressed()`.
-   *
-   * \see bootLogo() begin() boot()
-   */
-  void bootLogoCompressed();
-
-  /** \brief
-   * Display the boot logo sequence using `Sprites::drawSelfMasked()`.
-   *
-   * \details
-   * This function can be called by a sketch after `boot()` as an alternative to
-   * `bootLogo()`. This may reduce code size if the sketch itself uses
-   * `Sprites` class functions.
-   *
-   * \see bootLogo() begin() boot() Sprites
-   */
-  void bootLogoSpritesSelfMasked();
-
-  /** \brief
-   * Display the boot logo sequence using `Sprites::drawOverwrite()`.
-   *
-   * \details
-   * This function can be called by a sketch after `boot()` as an alternative to
-   * `bootLogo()`. This may reduce code size if the sketch itself uses
-   * `Sprites` class functions.
-   *
-   * \see bootLogo() begin() boot() Sprites
-   */
-  void bootLogoSpritesOverwrite();
-
-  /** \brief
-   * Display the boot logo sequence using `SpritesB::drawSelfMasked()`.
-   *
-   * \details
-   * This function can be called by a sketch after `boot()` as an alternative to
-   * `bootLogo()`. This may reduce code size if the sketch itself uses
-   * `SpritesB` class functions.
-   *
-   * \see bootLogo() begin() boot() SpritesB
-   */
-  void bootLogoSpritesBSelfMasked();
-
-  /** \brief
-   * Display the boot logo sequence using `SpritesB::drawOverwrite()`.
-   *
-   * \details
-   * This function can be called by a sketch after `boot()` as an alternative to
-   * `bootLogo()`. This may reduce code size if the sketch itself uses
-   * `SpritesB` class functions.
-   *
-   * \see bootLogo() begin() boot() SpritesB
-   */
-  void bootLogoSpritesBOverwrite();
-
-  /** \brief
-   * Display the boot logo sequence using the provided function
-   *
-   * \param drawLogo A reference to a function which will draw the boot logo
-   * at the given Y position.
-   *
-   * \details
-   * This common function executes the sequence to display the boot logo.
-   * It is called by `bootLogo()` and other similar functions which provide it
-   * with a reference to a function which will do the actual drawing of the
-   * logo.
-   *
-   * This function calls `bootLogoExtra()` after the logo stops scrolling down,
-   * which derived classes can implement to add additional information to the
-   * logo screen. The `Arduboy2` class uses this to display the unit name.
-   *
-   * If the RIGHT button is pressed while the logo is scrolling down,
-   * the boot logo sequence will be aborted. This can be useful for
-   * developers who wish to quickly start testing, or anyone else who is
-   * impatient and wants to go straight to the actual sketch.
-   *
-   * If the SYS_FLAG_SHOW_LOGO_LEDS flag in system EEPROM is cleared,
-   * the RGB LEDs will not be flashed during the logo display sequence.
-   *
-   * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
-   * will return without executing the logo display sequence.
-   *
-   * The prototype for the function provided to draw the logo is:
-   *
-   * \code{.cpp}
-   * void drawLogo(int16_t y);
-   * \endcode
-   *
-   * The y parameter is the Y offset for the top of the logo. It is expected
-   * that the logo will be 16 pixels high and centered horizontally. This will
-   * result in the logo stopping in the middle of the screen at the end of the
-   * sequence. If the logo height is not 16 pixels, the Y value can be adjusted
-   * to compensate.
-   *
-   * \see bootLogo() boot() Arduboy2::bootLogoExtra()
-   */
-  void bootLogoShell(void (*drawLogo)(int16_t));
-
-  // Called by bootLogoShell() to allow derived classes to display additional
-  // information after the logo stops scrolling down.
-  virtual void bootLogoExtra();
 
   /** \brief
    * Wait until all buttons have been released.
    *
    * \details
-   * This function is called by `begin()` and can be called by a sketch
-   * after `boot()`.
+   * This function is called by `begin()`.
    *
    * It won't return unless no buttons are being pressed. A short delay is
    * performed each time before testing the state of the buttons to do a
    * simple button debounce.
    *
-   * This function is called at the end of `begin()` to make sure no buttons
-   * used to perform system start up actions are still being pressed, to
-   * prevent them from erroneously being detected by the sketch code itself.
-   *
-   * \see begin() boot()
+   * \see begin()
    */
   void waitNoButtons();
 
@@ -427,7 +165,7 @@ class Arduboy2Base : public Arduboy2Core
    * Clear the display buffer.
    *
    * \details
-   * The entire contents of the screen buffer are cleared to BLACK.
+   * The entire contents of the screen buffer are cleared to COLOR_BG.
    *
    * \see display(bool)
    */
@@ -469,24 +207,26 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
-   * \param color The color of the pixel (optional; defaults to WHITE).
+   * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
    *
    * \details
-   * The single pixel specified location in the display buffer is set to the
-   * specified color. The values WHITE or BLACK can be used for the color.
-   * If the `color` parameter isn't included, the pixel will be set to WHITE.
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  static void drawPixel(int16_t x, int16_t y, uint8_t color = WHITE);
+  static void drawPixel(int16_t x, int16_t y, uint16_t color = COLOR_WHITE);
 
   /** \brief
-   * Returns the state of the given pixel in the screen buffer.
+   * Returns the color of the given pixel in the screen buffer.
    *
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
    *
-   * \return WHITE if the pixel is on or BLACK if the pixel is off.
+   * \return A 12-bit 444-formatted RGB color value.
    */
-  uint8_t getPixel(uint8_t x, uint8_t y);
+  uint16_t getPixel(uint8_t x, uint8_t y);
 
   /** \brief
    * Draw a circle of a given radius.
@@ -494,13 +234,21 @@ class Arduboy2Base : public Arduboy2Core
    * \param x0 The X coordinate of the circle's center.
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
-   * \param color The circle's color (optional; defaults to WHITE).
+   * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
+  void drawCircle(int16_t x0, int16_t y0, uint8_t r, uint16_t color = COLOR_WHITE);
 
+  // TODO: Move to protected/private?
   // Draw one or more "corners" of a circle.
   // (Not officially part of the API)
-  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, uint8_t color = WHITE);
+  void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in circle of a given radius.
@@ -508,28 +256,40 @@ class Arduboy2Base : public Arduboy2Core
    * \param x0 The X coordinate of the circle's center.
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
-   * \param color The circle's color (optional; defaults to WHITE).
+   * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color = WHITE);
+  void fillCircle(int16_t x0, int16_t y0, uint8_t r, uint16_t color = COLOR_WHITE);
 
   // Draw one or both vertical halves of a filled-in circle or
   // rounded rectangle edge.
   // (Not officially part of the API)
-  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, uint8_t color = WHITE);
+  void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a line between two specified points.
    *
    * \param x0,x1 The X coordinates of the line ends.
    * \param y0,y1 The Y coordinates of the line ends.
-   * \param color The line's color (optional; defaults to WHITE).
+   * \param color The line's color (optional; defaults to `COLOR_WHITE`).
    *
    * \details
-   * Draw a line from the start point to the end point using
-   * Bresenham's algorithm.
+   * Draw a line from the start point to the end point using Bresenham's algorithm.
    * The start and end points can be at any location with respect to the other.
+   *
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color = WHITE);
+  void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a rectangle of a specified width and height.
@@ -538,9 +298,16 @@ class Arduboy2Base : public Arduboy2Core
    * \param y The Y coordinate of the upper left corner.
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
-   * \param color The color of the pixel (optional; defaults to WHITE).
+   * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color = WHITE);
+  void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a vertical line.
@@ -548,9 +315,16 @@ class Arduboy2Base : public Arduboy2Core
    * \param x The X coordinate of the upper start point.
    * \param y The Y coordinate of the upper start point.
    * \param h The height of the line.
-   * \param color The color of the line (optional; defaults to WHITE).
+   * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawFastVLine(int16_t x, int16_t y, uint8_t h, uint8_t color = WHITE);
+  void drawFastVLine(int16_t x, int16_t y, uint8_t h, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a horizontal line.
@@ -558,9 +332,16 @@ class Arduboy2Base : public Arduboy2Core
    * \param x The X coordinate of the left start point.
    * \param y The Y coordinate of the left start point.
    * \param w The width of the line.
-   * \param color The color of the line (optional; defaults to WHITE).
+   * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawFastHLine(int16_t x, int16_t y, uint8_t w, uint8_t color = WHITE);
+  void drawFastHLine(int16_t x, int16_t y, uint8_t w, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in rectangle of a specified width and height.
@@ -569,16 +350,30 @@ class Arduboy2Base : public Arduboy2Core
    * \param y The Y coordinate of the upper left corner.
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
-   * \param color The color of the pixel (optional; defaults to WHITE).
+   * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color = WHITE);
+  void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Fill the screen buffer with the specified color.
    *
-   * \param color The fill color (optional; defaults to WHITE).
+   * \param color The fill color (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void fillScreen(uint8_t color = WHITE);
+  void fillScreen(uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a rectangle with rounded corners.
@@ -588,9 +383,16 @@ class Arduboy2Base : public Arduboy2Core
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
-   * \param color The color of the rectangle (optional; defaults to WHITE).
+   * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color = WHITE);
+  void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in rectangle with rounded corners.
@@ -600,112 +402,78 @@ class Arduboy2Base : public Arduboy2Core
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
-   * \param color The color of the rectangle (optional; defaults to WHITE).
+   * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
+   *
+   * \details
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color = WHITE);
+  void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a triangle given the coordinates of each corner.
    *
    * \param x0,x1,x2 The X coordinates of the corners.
    * \param y0,y1,y2 The Y coordinates of the corners.
-   * \param color The triangle's color (optional; defaults to WHITE).
+   * \param color The triangle's color (optional; defaults to `COLOR_WHITE`).
    *
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
-   * The corners can be at any position with respect to the others.
+   * The corners can be at any position with respect to each other.
+   *
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
+   *
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
+  void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in triangle given the coordinates of each corner.
    *
    * \param x0,x1,x2 The X coordinates of the corners.
    * \param y0,y1,y2 The Y coordinates of the corners.
-   * \param color The triangle's color (optional; defaults to WHITE).
+   * \param color The triangle's color (optional; defaults to `COLOR_WHITE`).
    *
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
-   * The corners can be at any position with respect to the others.
-   */
-  void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color = WHITE);
-
-  /** \brief
-   * Draw a bitmap from an array in program memory.
+   * The corners can be at any position with respect to each other.
    *
-   * \param x The X coordinate of the top left pixel affected by the bitmap.
-   * \param y The Y coordinate of the top left pixel affected by the bitmap.
-   * \param bitmap A pointer to the bitmap array in program memory.
-   * \param w The width of the bitmap in pixels.
-   * \param h The height of the bitmap in pixels.
-   * \param color The color of pixels for bits set to 1 in the bitmap.
-   *              If the value is INVERT, bits set to 1 will invert the
-   *              corresponding pixel. (optional; defaults to WHITE).
-   *
-   * \details
-   * Bits set to 1 in the provided bitmap array will have their corresponding
-   * pixel set to the specified color. For bits set to 0 in the array, the
-   * corresponding pixel will be left unchanged.
-   *
-   * Each byte in the array specifies a vertical column of 8 pixels, with the
-   * least significant bit at the top.
-   *
-   * The array must be located in program memory by using the PROGMEM modifier.
-   */
-  static void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
-
-  /** \brief
-   * Draw a bitmap from a horizontally oriented array in program memory.
-   *
-   * \param x The X coordinate of the top left pixel affected by the bitmap.
-   * \param y The Y coordinate of the top left pixel affected by the bitmap.
-   * \param bitmap A pointer to the bitmap array in program memory.
-   * \param w The width of the bitmap in pixels.
-   * \param h The height of the bitmap in pixels.
-   * \param color The color of pixels for bits set to 1 in the bitmap.
-   *              (optional; defaults to WHITE).
-   *
-   * \details
-   * Bits set to 1 in the provided bitmap array will have their corresponding
-   * pixel set to the specified color. For bits set to 0 in the array, the
-   * corresponding pixel will be left unchanged.
-   *
-   * Each byte in the array specifies a horizontal row of 8 pixels, with the
-   * most significant bit at the left end of the row.
-   *
-   * The array must be located in program memory by using the PROGMEM modifier.
+   * Color must be a 12-bit 444-formatted RGB color value, `COLOR_TRANS`, or `COLOR_INVERT`.
    *
    * \note
-   * This function requires a lot of additional CPU power and will draw images
-   * slower than `drawBitmap()`, which uses bitmaps that are stored in a format
-   * that allows them to be directly written to the screen. It is recommended
-   * you use `drawBitmap()` when possible.
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  void drawSlowXYBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color = WHITE);
+  void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color = COLOR_WHITE);
 
   /** \brief
-   * Draw a bitmap from an array of compressed data.
+   * Draw a bitmap from a horizontally-oriented array in program memory.
    *
-   * \param sx The X coordinate of the top left pixel affected by the bitmap.
-   * \param sy The Y coordinate of the top left pixel affected by the bitmap.
-   * \param bitmap A pointer to the compressed bitmap array in program memory.
-   * \param color The color of pixels for bits set to 1 in the bitmap.
-   *              (optional; defaults to WHITE).
+   * \param x The X coordinate of the top left pixel affected by the bitmap.
+   * \param y The Y coordinate of the top left pixel affected by the bitmap.
+   * \param bitmap A pointer to the bitmap array in program memory.
+   * \param w The width of the bitmap in pixels.
+   * \param h The height of the bitmap in pixels.
    *
    * \details
-   * Draw a bitmap starting at the given coordinates from an array that has
-   * been compressed using an algorthm implemented by Team A.R.G.
-   * For more information see:
-   * https://github.com/TEAMarg/drawCompressed
-   * https://github.com/TEAMarg/Cabi
+   * Each pixel is a 16-bit value that can represent either a 12-bit
+   * 444-formatted RGB color value (in which case the four most significant
+   * bits would be zero), `COLOR_TRANS`, or `COLOR_INVERT`. Pixels are arranged
+   * in rows, from left to right.
    *
-   * Bits set to 1 in the provided bitmap array will have their corresponding
-   * pixel set to the specified color. For bits set to 0 in the array, the
-   * corresponding pixel will be left unchanged.
+   * The input array must be located in program memory by using the `PROGMEM`
+   * modifier.
    *
-   * The array must be located in program memory by using the PROGMEM modifier.
+   * \note
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    */
-  static void drawCompressed(int16_t sx, int16_t sy, const uint8_t *bitmap, uint8_t color = WHITE);
+  void drawBitmap(int16_t x, int16_t y, const uint16_t *bitmap, uint8_t w, uint8_t h);
 
   /** \brief
    * Get a pointer to the display buffer in RAM.
@@ -715,12 +483,20 @@ class Arduboy2Base : public Arduboy2Core
    * \details
    * The location of the display buffer in RAM, which is displayed using
    * `display()`, can be gotten using this function. The buffer can then be
-   *  read and directly manipulated.
+   * read and directly manipulated.
+   *
+   * Every three bytes in the array specifies a horizontal row of two pixels, with the
+   * most significant bit at the left end of the row. Pixels are 12-bit 444-formatted
+   * RGB color values.
+   *
+   * The format for two neighboring pixels is as follows:
+   *
+   *         R
+   *    bit:  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
    *
    * \note
-   * The display buffer array, `sBuffer`, is public. A sketch can access it
-   * directly. Doing so may be more efficient than accessing it via the
-   * pointer returned by `getBuffer()`.
+   * The file `colors.h` contains helpful utilities for creating 12-bit 444-formatted
+   * color values.
    *
    * \see sBuffer
    */
@@ -1117,7 +893,7 @@ class Arduboy2Base : public Arduboy2Core
    * unitNameLength = arduboy.readUnitName(unitName);
    * \endcode
    *
-   * \see writeUnitName() readUnitID() Arduboy2::bootLogoExtra()
+   * \see writeUnitName() readUnitID() DotMG::bootLogoExtra()
    */
   uint8_t readUnitName(char* name);
 
@@ -1143,7 +919,7 @@ class Arduboy2Base : public Arduboy2Core
    * Sketches can use the defined value `ARDUBOY_UNIT_NAME_LEN` instead of
    * hard coding a 6 when working with the unit name.
    *
-   * \see readUnitName() writeUnitID() Arduboy2::bootLogoExtra()
+   * \see readUnitName() writeUnitID() DotMG::bootLogoExtra()
    */
   void writeUnitName(char* name);
 
@@ -1191,7 +967,7 @@ class Arduboy2Base : public Arduboy2Core
    * This function returns the value of this flag.
    *
    * \see writeShowUnitNameFlag() writeUnitName() readUnitName()
-   * Arduboy2::bootLogoExtra()
+   * DotMG::bootLogoExtra()
    */
   bool readShowUnitNameFlag();
 
@@ -1207,7 +983,7 @@ class Arduboy2Base : public Arduboy2Core
    * This function allows the flag to be saved with the desired value.
    *
    * \see readShowUnitNameFlag() writeUnitName() readUnitName()
-   * Arduboy2::bootLogoExtra()
+   * DotMG::bootLogoExtra()
    */
   void writeShowUnitNameFlag(bool val);
 
@@ -1277,6 +1053,7 @@ class Arduboy2Base : public Arduboy2Core
    */
   uint16_t frameCount;
 
+// TODO: Make private?
   /** \brief
    * The display buffer array in RAM.
    *
@@ -1289,7 +1066,7 @@ class Arduboy2Base : public Arduboy2Core
    *
    * \see getBuffer()
    */
-  static uint8_t sBuffer[(HEIGHT*WIDTH)/8];
+  static uint8_t sBuffer[(HEIGHT*WIDTH)/8];  // TODO
 
  protected:
   // helper function for sound enable/disable system control
@@ -1316,7 +1093,7 @@ class Arduboy2Base : public Arduboy2Core
 
 
 //==============================
-//========== Arduboy2 ==========
+//========== DotMG ==========
 //==============================
 
 /** \brief
@@ -1324,24 +1101,24 @@ class Arduboy2Base : public Arduboy2Core
  * _including_ text output.
  *
  * \details
- * This class is derived from Arduboy2Base. It provides text output functions
- * in addition to all the functions inherited from Arduboy2Base.
+ * This class is derived from DotMGBase. It provides text output functions
+ * in addition to all the functions inherited from DotMGBase.
  *
  * \note
- * A friend class named _Arduboy2Ex_ is declared by this class. The intention
- * is to allow a sketch to create an _Arduboy2Ex_ class which would have access
- * to the private and protected members of the Arduboy2 class. It is hoped
+ * A friend class named _DotMGEx_ is declared by this class. The intention
+ * is to allow a sketch to create an _DotMGEx_ class which would have access
+ * to the private and protected members of the DotMG class. It is hoped
  * that this may eliminate the need to create an entire local copy of the
  * library, in order to extend the functionality, in most circumstances.
  *
- * \see Arduboy2Base
+ * \see DotMGBase
  */
-class Arduboy2 : public Print, public Arduboy2Base
+class DotMG : public Print, public DotMGBase
 {
- friend class Arduboy2Ex;
+ friend class DotMGEx;
 
  public:
-  Arduboy2();
+  DotMG();
 
   /** \class Print
    * \brief
@@ -1349,7 +1126,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * buffer.
    *
    * \details
-   * For an `Arduboy2` class object, functions provided by the Arduino `Print`
+   * For an `DotMG` class object, functions provided by the Arduino `Print`
    * class can be used to write text to the screen buffer, in the same manner
    * as the Arduino `Serial.print()`, etc., functions.
    *
@@ -1370,7 +1147,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * arduboy.print(78, HEX) // Prints "4E" (78 in hexadecimal)
    * \endcode
    *
-   * \see Arduboy2::write()
+   * \see DotMG::write()
    */
   using Print::write;
 
@@ -1401,7 +1178,7 @@ class Arduboy2 : public Print, public Arduboy2Base
    * If the SYS_FLAG_SHOW_LOGO flag in system EEPROM is cleared, this function
    * will return without executing the logo display sequence.
    *
-   * \see bootLogo() boot() Arduboy2::bootLogoExtra()
+   * \see bootLogo() boot() DotMG::bootLogoExtra()
    */
   void bootLogoText();
 
@@ -1633,4 +1410,3 @@ class Arduboy2 : public Print, public Arduboy2Base
 };
 
 #endif
-

@@ -1,10 +1,10 @@
 /**
- * @file Arduboy2Core.cpp
+ * @file DotMGCore.cpp
  * \brief
- * The Arduboy2Core class for Arduboy hardware initilization and control.
+ * The DotMGCore class for Arduboy hardware initilization and control.
  */
 
-#include "Arduboy2CoreDotMG.h"
+#include "DotMGCore.h"
 #include <SPI.h>
 
 static uint16_t borderLineColor = COLOR_GRAY;
@@ -35,9 +35,9 @@ static void drawLEDs();
 static void initDMA();
 static void startDMA(uint8_t *data, uint16_t n);
 
-Arduboy2Core::Arduboy2Core() { }
+DotMGCore::DotMGCore() { }
 
-void Arduboy2Core::boot()
+void DotMGCore::boot()
 {
   bootPins();
   bootSPI();
@@ -45,7 +45,7 @@ void Arduboy2Core::boot()
   bootPowerSaving();
 }
 
-void Arduboy2Core::bootPins()
+void DotMGCore::bootPins()
 {
   pinMode(PIN_BUTTON_A, INPUT_PULLUP);
   pinMode(PIN_BUTTON_B, INPUT_PULLUP);
@@ -57,7 +57,7 @@ void Arduboy2Core::bootPins()
   pinMode(PIN_BUTTON_SELECT, INPUT_PULLUP);
 }
 
-void Arduboy2Core::bootDisplay()
+void DotMGCore::bootDisplay()
 {
   pinMode(PIN_DISP_SS, OUTPUT);
   pinMode(PIN_DISP_DC, OUTPUT);
@@ -135,41 +135,41 @@ void Arduboy2Core::bootDisplay()
   blank();
 }
 
-void Arduboy2Core::displayDataMode()
+void DotMGCore::displayDataMode()
 {
   *portOutputRegister(IO_PORT) |= MASK_DISP_DC;
 }
 
-void Arduboy2Core::displayCommandMode()
+void DotMGCore::displayCommandMode()
 {
   *portOutputRegister(IO_PORT) &= ~MASK_DISP_DC;
 }
 
 // Initialize the SPI interface for the display
-void Arduboy2Core::bootSPI()
+void DotMGCore::bootSPI()
 {
   SPI.begin();
   initDMA();
 }
 
-void Arduboy2Core::beginDisplaySPI()
+void DotMGCore::beginDisplaySPI()
 {
   *portOutputRegister(IO_PORT) &= ~MASK_DISP_SS;
   SPI.beginTransaction(SPI_SETTINGS);
 }
 
-void Arduboy2Core::endDisplaySPI()
+void DotMGCore::endDisplaySPI()
 {
   SPI.endTransaction();
   *portOutputRegister(IO_PORT) |= MASK_DISP_SS;
 }
 
-void Arduboy2Core::SPITransfer(uint8_t data)
+void DotMGCore::SPITransfer(uint8_t data)
 {
   SPI.transfer(data);
 }
 
-void Arduboy2Core::safeMode()
+void DotMGCore::safeMode()
 {
   if (buttonsState() == UP_BUTTON)
   {
@@ -181,7 +181,7 @@ void Arduboy2Core::safeMode()
 /* Power Management */
 
 // Shut down the display
-void Arduboy2Core::displayOff()
+void DotMGCore::displayOff()
 {
   beginDisplaySPI();
   sendDisplayCommand(ST77XX_SLPIN);
@@ -190,7 +190,7 @@ void Arduboy2Core::displayOff()
 }
 
 // Restart the display after a displayOff()
-void Arduboy2Core::displayOn()
+void DotMGCore::displayOn()
 {
   beginDisplaySPI();
   sendDisplayCommand(ST77XX_SLPOUT);
@@ -201,22 +201,22 @@ void Arduboy2Core::displayOn()
 
 /* Drawing */
 
-uint16_t Arduboy2Core::getPixelColor()
+uint16_t DotMGCore::getPixelColor()
 {
   return pixelColor;
 }
 
-void Arduboy2Core::setPixelColor(uint16_t color)
+void DotMGCore::setPixelColor(uint16_t color)
 {
   pixelColor = color;
 }
 
-uint16_t Arduboy2Core::getBackgroundColor()
+uint16_t DotMGCore::getBackgroundColor()
 {
   return bgColor;
 }
 
-void Arduboy2Core::setBackgroundColor(uint16_t color)
+void DotMGCore::setBackgroundColor(uint16_t color)
 {
   bgColor = color;
 
@@ -224,12 +224,12 @@ void Arduboy2Core::setBackgroundColor(uint16_t color)
     drawBorderGap();
 }
 
-uint16_t Arduboy2Core::getBorderLineColor()
+uint16_t DotMGCore::getBorderLineColor()
 {
   return borderLineColor;
 }
 
-void Arduboy2Core::setBorderLineColor(uint16_t color)
+void DotMGCore::setBorderLineColor(uint16_t color)
 {
   borderLineColor = color;
 
@@ -237,12 +237,12 @@ void Arduboy2Core::setBorderLineColor(uint16_t color)
     drawBorderLines();
 }
 
-uint16_t Arduboy2Core::getBorderFillColor()
+uint16_t DotMGCore::getBorderFillColor()
 {
   return borderFillColor;
 }
 
-void Arduboy2Core::setBorderFillColor(uint16_t color)
+void DotMGCore::setBorderFillColor(uint16_t color)
 {
   borderFillColor = color;
 
@@ -250,7 +250,7 @@ void Arduboy2Core::setBorderFillColor(uint16_t color)
     drawBorderFill();
 }
 
-void Arduboy2Core::setColorTheme(Theme theme)
+void DotMGCore::setColorTheme(Theme theme)
 {
   setPixelColor(theme.pixelColor);
   setBackgroundColor(theme.backgroundColor);
@@ -258,12 +258,12 @@ void Arduboy2Core::setColorTheme(Theme theme)
   setBorderFillColor(theme.borderFillColor);
 }
 
-void Arduboy2Core::paintScreen(const uint8_t *image)
+void DotMGCore::paintScreen(const uint8_t *image)
 {
   paintScreen((uint8_t *)image, false);
 }
 
-void Arduboy2Core::paintScreen(uint8_t image[], bool clear)
+void DotMGCore::paintScreen(uint8_t image[], bool clear)
 {
   beginDisplaySPI();
 
@@ -293,12 +293,12 @@ void Arduboy2Core::paintScreen(uint8_t image[], bool clear)
     memset(image, 0, WIDTH*HEIGHT/8);
 }
 
-void Arduboy2Core::blank()
+void DotMGCore::blank()
 {
   drawRegion(bgColor);
 }
 
-void Arduboy2Core::sendDisplayCommand(uint8_t command)
+void DotMGCore::sendDisplayCommand(uint8_t command)
 {
   displayCommandMode();
   SPITransfer(command);
@@ -307,24 +307,24 @@ void Arduboy2Core::sendDisplayCommand(uint8_t command)
 
 static void setWriteRegion(uint8_t x, uint8_t y, uint8_t width, uint8_t height)
 {
-  Arduboy2Core::sendDisplayCommand(ST77XX_CASET);  //  Column addr set
-  Arduboy2Core::SPITransfer(0);
-  Arduboy2Core::SPITransfer(x);                    //  x start
-  Arduboy2Core::SPITransfer(0);
-  Arduboy2Core::SPITransfer(x + width - 1);        //  x end
+  DotMGCore::sendDisplayCommand(ST77XX_CASET);  //  Column addr set
+  DotMGCore::SPITransfer(0);
+  DotMGCore::SPITransfer(x);                    //  x start
+  DotMGCore::SPITransfer(0);
+  DotMGCore::SPITransfer(x + width - 1);        //  x end
 
-  Arduboy2Core::sendDisplayCommand(ST77XX_RASET);  //  Row addr set
-  Arduboy2Core::SPITransfer(0);
-  Arduboy2Core::SPITransfer(y);                    //  y start
-  Arduboy2Core::SPITransfer(0);
-  Arduboy2Core::SPITransfer(y + height - 1);       //  y end
+  DotMGCore::sendDisplayCommand(ST77XX_RASET);  //  Row addr set
+  DotMGCore::SPITransfer(0);
+  DotMGCore::SPITransfer(y);                    //  y start
+  DotMGCore::SPITransfer(0);
+  DotMGCore::SPITransfer(y + height - 1);       //  y end
 
-  Arduboy2Core::sendDisplayCommand(ST77XX_RAMWR);  //  Initialize write to display RAM
+  DotMGCore::sendDisplayCommand(ST77XX_RAMWR);  //  Initialize write to display RAM
 }
 
 static void drawRegion(uint16_t color, uint8_t x, uint8_t y, uint8_t width, uint8_t height)
 {
-  Arduboy2Core::beginDisplaySPI();
+  DotMGCore::beginDisplaySPI();
   int numBytes = BYTES_FOR_REGION(width, height);
   setWriteRegion(x, y, width, height);
   for (int i = 0; i < numBytes; i += 3)
@@ -395,7 +395,7 @@ static void drawBorder()
 }
 
 // invert the display or set to normal
-void Arduboy2Core::invert(bool inverse)
+void DotMGCore::invert(bool inverse)
 {
   if (inverse == inverted)
     return;
@@ -409,7 +409,7 @@ void Arduboy2Core::invert(bool inverse)
 
 // turn all display pixels on, ignoring buffer contents
 // or set to normal buffer display
-void Arduboy2Core::allPixelsOn(bool on)
+void DotMGCore::allPixelsOn(bool on)
 {
   beginDisplaySPI();
   sendDisplayCommand(on ? ST77XX_DISPOFF : ST77XX_DISPON);
@@ -418,7 +418,7 @@ void Arduboy2Core::allPixelsOn(bool on)
 }
 
 // flip the display vertically or set to normal
-void Arduboy2Core::flipVertical(bool flipped)
+void DotMGCore::flipVertical(bool flipped)
 {
   if (flipped)
   {
@@ -435,7 +435,7 @@ void Arduboy2Core::flipVertical(bool flipped)
 }
 
 // flip the display horizontally or set to normal
-void Arduboy2Core::flipHorizontal(bool flipped)
+void DotMGCore::flipHorizontal(bool flipped)
 {
   if (flipped)
   {
@@ -454,7 +454,7 @@ void Arduboy2Core::flipHorizontal(bool flipped)
 
 /* RGB LED */
 
-void Arduboy2Core::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
+void DotMGCore::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
 {
   LEDs[RED_LED] = red;
   LEDs[GREEN_LED] = green;
@@ -462,18 +462,18 @@ void Arduboy2Core::setRGBled(uint8_t red, uint8_t green, uint8_t blue)
   drawLEDs();
 }
 
-void Arduboy2Core::setRGBled(uint8_t color, uint8_t val)
+void DotMGCore::setRGBled(uint8_t color, uint8_t val)
 {
   LEDs[color] = val;
   drawLEDs();
 }
 
-void Arduboy2Core::freeRGBled()
+void DotMGCore::freeRGBled()
 {
   // NOP
 }
 
-void Arduboy2Core::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
+void DotMGCore::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
   LEDs[RED_LED] = (red == RGB_ON ? 0xFF : 0);
   LEDs[GREEN_LED] = (green == RGB_ON ? 0xFF : 0);
@@ -481,7 +481,7 @@ void Arduboy2Core::digitalWriteRGB(uint8_t red, uint8_t green, uint8_t blue)
   drawLEDs();
 }
 
-void Arduboy2Core::digitalWriteRGB(uint8_t color, uint8_t val)
+void DotMGCore::digitalWriteRGB(uint8_t color, uint8_t val)
 {
   LEDs[color] = (val == RGB_ON ? 0xFF : 0);
   drawLEDs();
@@ -489,7 +489,7 @@ void Arduboy2Core::digitalWriteRGB(uint8_t color, uint8_t val)
 
 static void drawLEDs()
 {
-  Arduboy2Core::beginDisplaySPI();
+  DotMGCore::beginDisplaySPI();
 
   int numBytes = BYTES_FOR_REGION(DISP_WIDTH, 4);
   setWriteRegion(0, (MADCTL & ST77XX_MADCTL_MX) ? 0 : DISP_HEIGHT-4, DISP_WIDTH, 4);
@@ -510,7 +510,7 @@ static void drawLEDs()
 
 /* Buttons */
 
-uint8_t Arduboy2Core::buttonsState()
+uint8_t DotMGCore::buttonsState()
 {
   uint32_t btns = ~(*portInputRegister(IO_PORT));
   return (
@@ -526,12 +526,12 @@ uint8_t Arduboy2Core::buttonsState()
 }
 
 // delay in ms with 16 bit duration
-void Arduboy2Core::delayShort(uint16_t ms)
+void DotMGCore::delayShort(uint16_t ms)
 {
   delay((unsigned long)ms);
 }
 
-void Arduboy2Core::exitToBootloader()
+void DotMGCore::exitToBootloader()
 {
   noInterrupts();
   while (true);
@@ -615,7 +615,7 @@ void DMAC_Handler()
     DMAC->CHID.reg = DMAC_CHID_ID(DMA_CHAN);
     DMAC->CHCTRLA.bit.ENABLE = 0;
 
-    Arduboy2Core::endDisplaySPI();
+    DotMGCore::endDisplaySPI();
     dmaBusy = false;
 
     // Clear interrupt flag

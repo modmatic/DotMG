@@ -1,51 +1,57 @@
-/*
-Hello, World! example
-June 11, 2015
-Copyright (C) 2015 David Martinez
-All rights reserved.
-This code is the most basic barebones code for writing a program for Arduboy.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-*/
-
-#include <Arduboy2DotMG.h>
-
-// make an instance of arduboy used for many functions
-Arduboy2 arduboy;
+#include <DotMG.h>
 
 
-// This function runs once in your game.
-// use it for anything that needs to be set only once in your game.
+DotMG dmg;
+
+uint8_t x = WIDTH/2 - 6*3, y = HEIGHT/2 - 4;
+uint8_t color = COLOR_A;
+
 void setup() {
-  // initiate arduboy instance
-  arduboy.begin();
-
-  // here we set the framerate to 15, we do not need to run at
-  // default 60 and it saves us battery life
-  arduboy.setFrameRate(15);
+  dmg.begin();
 }
 
-
-// our main game loop, this runs once every cycle/frame.
-// this is where our game logic goes.
 void loop() {
-  // pause render until it's time for the next frame
-  if (!(arduboy.nextFrame()))
-    return;
+  dmg.clear();
 
-  // first we clear our screen to black
-  arduboy.clear();
+  if (dmg.pressed(UP_BUTTON) && y > 0)
+  {
+    y -= 1;
+  }
 
-  // we set our cursor 5 pixels to the right and 10 down from the top
-  // (positions start at 0, 0)
-  arduboy.setCursor(4, 9);
+  if (dmg.pressed(DOWN_BUTTON) && y < HEIGHT-8)
+  {
+    y += 1;
+  }
 
-  // then we print to screen what is in the Quotation marks ""
-  arduboy.print(F("Hello, world!"));
+  if (dmg.pressed(LEFT_BUTTON) && x > 0)
+  {
+    x -= 1;
+  }
 
-  // then we finaly we tell the arduboy to display what we just wrote to the display
-  arduboy.display();
+  if (dmg.pressed(RIGHT_BUTTON) && x < WIDTH-6*6)
+  {
+    x += 1;
+  }
+
+  if (dmg.pressed(A_BUTTON))
+  {
+    color += 1;
+    if (color > COLOR_C)
+      color = COLOR_A;
+  }
+
+  if (dmg.pressed(B_BUTTON))
+  {
+    color -= 1;
+    if (color < COLOR_A)
+      color = COLOR_C;
+  }
+
+  // dmg.setCursor(x, y);
+  // dmg.setTextColor(color);
+  // dmg.print(F("Hello!"));
+
+  dmg.drawPixel(x, y, color);
+
+  dmg.display();
 }

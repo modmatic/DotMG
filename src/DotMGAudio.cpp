@@ -1,29 +1,29 @@
 /**
- * @file Arduboy2Audio.cpp
+ * @file DotMGAudio.cpp
  * \brief
- * The Arduboy2Audio class for speaker and sound control.
+ * The DotMGAudio class for speaker and sound control.
  */
 
-#include "Arduboy2DotMG.h"
-#include "Arduboy2AudioDotMG.h"
+#include "DotMG.h"
+#include "DotMGAudio.h"
 
-bool Arduboy2Audio::audio_enabled = false;
+bool DotMGAudio::audio_enabled = false;
 
-void Arduboy2Audio::on()
+void DotMGAudio::on()
 {
   audio_enabled = true;
   DAC->CTRLA.bit.ENABLE = 1;
   while (DAC->STATUS.bit.SYNCBUSY);
 }
 
-void Arduboy2Audio::off()
+void DotMGAudio::off()
 {
   audio_enabled = false;
   DAC->CTRLA.bit.ENABLE = 0;
   while (DAC->STATUS.bit.SYNCBUSY);
 }
 
-void Arduboy2Audio::toggle()
+void DotMGAudio::toggle()
 {
   if (audio_enabled)
     off();
@@ -31,12 +31,12 @@ void Arduboy2Audio::toggle()
     on();
 }
 
-void Arduboy2Audio::saveOnOff()
+void DotMGAudio::saveOnOff()
 {
   EEPROM.update(EEPROM_AUDIO_ON_OFF, audio_enabled);
 }
 
-void Arduboy2Audio::begin()
+void DotMGAudio::begin()
 {
   if (EEPROM.read(EEPROM_AUDIO_ON_OFF))
     on();
@@ -44,7 +44,7 @@ void Arduboy2Audio::begin()
     off();
 }
 
-bool Arduboy2Audio::enabled()
+bool DotMGAudio::enabled()
 {
   return audio_enabled;
 }
