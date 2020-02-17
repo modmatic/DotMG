@@ -7,8 +7,6 @@
 #include "DotMGCore.h"
 #include <SPI.h>
 
-static const int frameBufLen = WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
-
 static uint8_t MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
 static bool inverted = false;
 

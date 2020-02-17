@@ -150,6 +150,7 @@
 
 // --------------------
 
+static const int frameBufLen = WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
 
 /** \brief
  * Lower level functions generally dealing directly with the hardware.
