@@ -38,7 +38,6 @@ void DotMGCore::boot()
   bootPins();
   bootSPI();
   bootDisplay();
-  bootPowerSaving();
 }
 
 void bootPins()
@@ -165,7 +164,7 @@ void DotMGCore::invert(bool inverse)
   inverted = inverse;
 
   beginDisplaySPI();
-  sendLCDCommand(inverse ? ST77XX_INVON : ST77XX_INVOFF);
+  sendDisplayCommand(inverse ? ST77XX_INVON : ST77XX_INVOFF);
   endDisplaySPI();
 }
 
@@ -366,7 +365,7 @@ void DMAC_Handler()
     DMAC->CHID.reg = DMAC_CHID_ID(DMA_CHAN);
     DMAC->CHCTRLA.bit.ENABLE = 0;
 
-    DotMGCore::endDisplaySPI();
+    endDisplaySPI();
     dmaBusy = false;
 
     // Clear interrupt flag

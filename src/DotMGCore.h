@@ -165,20 +165,6 @@ class DotMGCore
     DotMGCore();
 
     /** \brief
-     * Get the width of the display in pixels.
-     *
-     * \return The width of the display in pixels.
-     */
-    constexpr uint8_t static width() { return WIDTH; }
-
-    /** \brief
-     * Get the height of the display in pixels.
-     *
-     * \return The height of the display in pixels.
-     */
-    constexpr uint8_t static height() { return HEIGHT; }
-
-    /** \brief
      * Paints an entire image directly to the display from program memory.
      *
      * \param image A byte array in program memory representing the entire

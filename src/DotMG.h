@@ -10,10 +10,7 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 #include "DotMGCore.h"
-#include "Sprites.h"
-#include "SpritesB.h"
 #include <Print.h>
-#include "DotMGAudio.h"
 
 #define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
 
@@ -347,7 +344,7 @@ class DotMGBase : public DotMGCore
    *   Bit:   7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
    *  Byte: |------- Byte 1 --------|------- Byte 2 --------|------- Byte 3 --------|
    */
-  uint8_t* frameBuffer();
+  static uint8_t* frameBuffer();
 
   /** \brief
    * Create a seed suitable for use with a random number generator.
@@ -362,7 +359,7 @@ class DotMGBase : public DotMGCore
    *
    * \see initRandomSeed()
    */
-  unsigned long generateRandomSeed();
+  static unsigned long generateRandomSeed();
 
   /** \brief
    * Seed the random number generator with a random value.
@@ -394,12 +391,12 @@ class DotMGBase : public DotMGCore
    * // move for 10 frames when right button is pressed, if not already moving
    * if (!moving) {
    *   if (dmg.justPressed(RIGHT_BUTTON)) {
-   *     endMoving = dmg.frameCount + 10;
+   *     endMoving = dmg.frameCount() + 10;
    *     moving = true;
    *   }
    * } else {
    *   movePlayer();
-   *   if (dmg.frameCount == endMoving) {
+   *   if (dmg.frameCount() == endMoving) {
    *     moving = false;
    *   }
    * }
@@ -411,7 +408,7 @@ class DotMGBase : public DotMGCore
    *
    * \see nextFrame() everyXFrames()
    */
-  static unsigned long frameCount() { return frameCount; }
+  static uint8_t frameCount();
 
   /** \brief
    * Set the frame rate used by the frame control functions.
@@ -811,7 +808,7 @@ class DotMG : public Print, public DotMGBase
    *
    * \see Print write() setTextColor() setTextBackground() setTextSize()
    */
-  static void drawChar(int16_t x, int16_t y, unsigned char c, Color color, uint16_t bg, uint8_t size);
+  static void drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color bg, uint8_t size);
 
   /** \brief
    * Set the location of the text cursor.
@@ -864,7 +861,7 @@ class DotMG : public Print, public DotMGBase
    *
    * \see setTextBackground() getTextColor()
    */
-  static void setTextColor(uint8_t color);
+  static void setTextColor(Color color);
 
   /** \brief
    * Get the currently set text foreground color.
@@ -873,7 +870,7 @@ class DotMG : public Print, public DotMGBase
    *
    * \see setTextColor()
    */
-  static uint8_t getTextColor();
+  static Color getTextColor();
 
   /** \brief
    * Set the text background color.
@@ -882,7 +879,7 @@ class DotMG : public Print, public DotMGBase
    *
    * \see setTextColor() getTextBackground()
    */
-  static void setTextBackground(uint8_t bg);
+  static void setTextBackground(Color color);
 
   /** \brief
    * Get the currently set text background color.
@@ -891,7 +888,7 @@ class DotMG : public Print, public DotMGBase
    *
    * \see setTextBackground()
    */
-  static uint8_t getTextBackground();
+  static Color getTextBackground();
 
   /** \brief
    * Set the text character size.

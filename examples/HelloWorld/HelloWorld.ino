@@ -4,7 +4,7 @@
 DotMG dmg;
 
 uint8_t x = WIDTH/2 - 6*3, y = HEIGHT/2 - 4;
-uint8_t color = COLOR_A;
+Color color = COLOR_WHITE;
 
 void setup() {
   dmg.begin();
@@ -33,25 +33,11 @@ void loop() {
     x += 1;
   }
 
-  if (dmg.pressed(A_BUTTON))
-  {
-    color += 1;
-    if (color > COLOR_C)
-      color = COLOR_A;
-  }
+  dmg.setCursor(x, y);
+  dmg.setTextColor(color);
+  dmg.print(F("Hello!"));
 
-  if (dmg.pressed(B_BUTTON))
-  {
-    color -= 1;
-    if (color < COLOR_A)
-      color = COLOR_C;
-  }
-
-  // dmg.setCursor(x, y);
-  // dmg.setTextColor(color);
-  // dmg.print(F("Hello!"));
-
-  dmg.drawPixel(x, y, color);
+  // dmg.drawPixel(x, y, color);
 
   dmg.display();
 }

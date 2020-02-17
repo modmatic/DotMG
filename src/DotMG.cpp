@@ -32,8 +32,8 @@ Point::Point(int16_t x, int16_t y)
 static uint8_t currentButtonState;
 static uint8_t previousButtonState;
 
-static uint8_t frameBuffer[frameBufLen];
-static unsigned long frameCount;
+static uint8_t frameBuf[frameBufLen];
+static uint8_t currFrame;
 static uint8_t eachFrameMillis = 16;
 static uint8_t thisFrameStart;
 static bool justRendered;
@@ -45,7 +45,7 @@ static void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners,
 // Draw one or both vertical halves of a filled-in circle or rounded rectangle edge.
 static void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, uint16_t color = COLOR_WHITE);
 
-static void swap(int16_t& a, int16_t& b);
+static void swap(int16_t &a, int16_t &b);
 
 
 void DotMGBase::begin()
@@ -63,41 +63,40 @@ void DotMGBase::clear()
 
 void DotMGBase::display()
 {
-  paintScreen(frameBuffer);
+  paintScreen(frameBuf);
 }
 
 void DotMGBase::display(bool clear)
 {
-  paintScreen(frameBuffer, clear);
+  paintScreen(frameBuf, clear);
 }
 
-void DotMGBase::drawPixel(int16_t x, int16_t y, uint8_t color)
+void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
 {
-  #ifdef PIXEL_SAFE_MODE
   if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
-  {
     return;
-  }
-  #endif
 
-  uint16_t row_offset;
-  uint8_t bit;
+  // TODO
+  // uint16_t row_offset;
+  // uint8_t bit;
 
-  bit = 1 << (y & 7);
-  row_offset = y / 8 * WIDTH + x;
-  uint8_t data = sBuffer[row_offset] | bit;
-  if (!(color & bit(0))) data ^= bit;
-  sBuffer[row_offset] = data;
+  // bit = 1 << (y & 7);
+  // row_offset = y / 8 * WIDTH + x;
+  // uint8_t data = sBuffer[row_offset] | bit;
+  // if (!(color & bit(0))) data ^= bit;
+  // sBuffer[row_offset] = data;
 }
 
-uint8_t DotMGBase::getPixel(uint8_t x, uint8_t y)
+Color DotMGBase::getPixel(uint8_t x, uint8_t y)
 {
-  uint8_t row = y / 8;
-  uint8_t bit_position = y % 8;
-  return (sBuffer[(row*WIDTH) + x] & bit(bit_position)) >> bit_position;
+  // TODO
+  // uint8_t row = y / 8;
+  // uint8_t bit_position = y % 8;
+  // return (sBuffer[(row*WIDTH) + x] & bit(bit_position)) >> bit_position;
+  return COLOR_CLEAR;
 }
 
-void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
+void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
 {
   int16_t f = 1 - r;
   int16_t ddF_x = 1;
@@ -134,8 +133,7 @@ void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
   }
 }
 
-void DotMGBase::drawCircleHelper
-(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, uint8_t color)
+void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color color)
 {
   int16_t f = 1 - r;
   int16_t ddF_x = 1;
@@ -179,15 +177,13 @@ void DotMGBase::drawCircleHelper
   }
 }
 
-void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint8_t r, uint8_t color)
+void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
 {
   drawFastVLine(x0, y0-r, 2*r+1, color);
   fillCircleHelper(x0, y0, r, 3, 0, color);
 }
 
-void DotMGBase::fillCircleHelper
-(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta,
- uint8_t color)
+void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, Color color)
 {
   int16_t f = 1 - r;
   int16_t ddF_x = 1;
@@ -222,8 +218,7 @@ void DotMGBase::fillCircleHelper
   }
 }
 
-void DotMGBase::drawLine
-(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color)
+void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color)
 {
   // bresenham's algorithm - thx wikpedia
   bool steep = abs(y1 - y0) > abs(x1 - x0);
@@ -273,8 +268,7 @@ void DotMGBase::drawLine
   }
 }
 
-void DotMGBase::drawRect
-(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color)
+void DotMGBase::drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
 {
   drawFastHLine(x, y, w, color);
   drawFastHLine(x, y+h-1, w, color);
@@ -282,8 +276,7 @@ void DotMGBase::drawRect
   drawFastVLine(x+w-1, y, h, color);
 }
 
-void DotMGBase::drawFastVLine
-(int16_t x, int16_t y, uint8_t h, uint8_t color)
+void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint8_t h, Color color)
 {
   int end = y+h;
   for (int a = max(0,y); a < min(end,HEIGHT); a++)
@@ -292,59 +285,58 @@ void DotMGBase::drawFastVLine
   }
 }
 
-void DotMGBase::drawFastHLine
-(int16_t x, int16_t y, uint8_t w, uint8_t color)
+void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint8_t w, Color color)
 {
-  int16_t xEnd; // last x point + 1
+  // TODO
+  // int16_t xEnd; // last x point + 1
 
-  // Do y bounds checks
-  if (y < 0 || y >= HEIGHT)
-    return;
+  // // Do y bounds checks
+  // if (y < 0 || y >= HEIGHT)
+  //   return;
 
-  xEnd = x + w;
+  // xEnd = x + w;
 
-  // Check if the entire line is not on the display
-  if (xEnd <= 0 || x >= WIDTH)
-    return;
+  // // Check if the entire line is not on the display
+  // if (xEnd <= 0 || x >= WIDTH)
+  //   return;
 
-  // Don't start before the left edge
-  if (x < 0)
-    x = 0;
+  // // Don't start before the left edge
+  // if (x < 0)
+  //   x = 0;
 
-  // Don't end past the right edge
-  if (xEnd > WIDTH)
-    xEnd = WIDTH;
+  // // Don't end past the right edge
+  // if (xEnd > WIDTH)
+  //   xEnd = WIDTH;
 
-  // calculate actual width (even if unchanged)
-  w = xEnd - x;
+  // // calculate actual width (even if unchanged)
+  // w = xEnd - x;
 
-  // buffer pointer plus row offset + x offset
-  register uint8_t *pBuf = sBuffer + ((y / 8) * WIDTH) + x;
+  // // buffer pointer plus row offset + x offset
+  // register uint8_t *pBuf = sBuffer + ((y / 8) * WIDTH) + x;
 
-  // pixel mask
-  register uint8_t mask = 1 << (y & 7);
+  // // pixel mask
+  // register uint8_t mask = 1 << (y & 7);
 
-  switch (color)
-  {
-    case WHITE:
-      while (w--)
-      {
-        *pBuf++ |= mask;
-      }
-      break;
+  // switch (color)
+  // {
+  //   case WHITE:
+  //     while (w--)
+  //     {
+  //       *pBuf++ |= mask;
+  //     }
+  //     break;
 
-    case BLACK:
-      mask = ~mask;
-      while (w--)
-      {
-        *pBuf++ &= mask;
-      }
-      break;
-  }
+  //   case BLACK:
+  //     mask = ~mask;
+  //     while (w--)
+  //     {
+  //       *pBuf++ &= mask;
+  //     }
+  //     break;
+  // }
 }
 
-void DotMGBase::fillRect
-(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t color)
+void DotMGBase::fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
 {
   // stupidest version - update in subclasses if desired!
   for (int16_t i=x; i<x+w; i++)
@@ -353,17 +345,17 @@ void DotMGBase::fillRect
   }
 }
 
-void DotMGBase::fillScreen(uint8_t color)
+void DotMGBase::fillScreen(Color color)
 {
-  if (color != BLACK)
-  {
-    color = 0xFF; // all pixels on
-  }
-  memset(sBuffer, color, WIDTH * HEIGHT / 8);
+  // TODO
+  // if (color != BLACK)
+  // {
+  //   color = 0xFF; // all pixels on
+  // }
+  // memset(sBuffer, color, WIDTH * HEIGHT / 8);
 }
 
-void DotMGBase::drawRoundRect
-(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color)
+void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
 {
   // smarter version
   drawFastHLine(x+r, y, w-2*r, color); // Top
@@ -377,8 +369,7 @@ void DotMGBase::drawRoundRect
   drawCircleHelper(x+r, y+h-r-1, r, 8, color);
 }
 
-void DotMGBase::fillRoundRect
-(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, uint8_t color)
+void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
 {
   // smarter version
   fillRect(x+r, y, w-2*r, h, color);
@@ -388,16 +379,14 @@ void DotMGBase::fillRoundRect
   fillCircleHelper(x+r, y+r, r, 2, h-2*r-1, color);
 }
 
-void DotMGBase::drawTriangle
-(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color)
+void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
 {
   drawLine(x0, y0, x1, y1, color);
   drawLine(x1, y1, x2, y2, color);
   drawLine(x2, y2, x0, y0, color);
 }
 
-void DotMGBase::fillTriangle
-(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color)
+void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
 {
 
   int16_t a, b, y, last;
@@ -499,8 +488,7 @@ void DotMGBase::fillTriangle
   }
 }
 
-void DotMGBase::drawBitmap
-(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color)
+void DotMGBase::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, Color color)
 {
   // no need to draw at all of we're offscreen
   if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
@@ -518,7 +506,7 @@ void DotMGBase::drawBitmap
 
 uint8_t* DotMGBase::frameBuffer()
 {
-  return frameBuffer;
+  return frameBuf;
 }
 
 
@@ -536,6 +524,11 @@ void DotMGBase::initRandomSeed()
 
 
 /* Frame management */
+
+uint8_t DotMGBase::frameCount()
+{
+  return currFrame;
+}
 
 void DotMGBase::setFrameRate(uint8_t rate)
 {
@@ -558,26 +551,20 @@ bool DotMGBase::nextFrame()
     return false;
   }
   else if (frameDurationMs < eachFrameMillis) {
-    // Only idle if at least a full millisecond remains, since idle() may
-    // sleep the processor until the next millisecond timer interrupt.
-    if (++frameDurationMs < eachFrameMillis) {
-      idle();
-    }
-
     return false;
   }
 
   // pre-render
   justRendered = true;
   thisFrameStart = now;
-  frameCount++;
+  currFrame++;
 
   return true;
 }
 
 bool DotMGBase::everyXFrames(uint8_t frames)
 {
-  return frameCount % frames == 0;
+  return currFrame % frames == 0;
 }
 
 int DotMGBase::cpuLoad()
@@ -637,7 +624,7 @@ bool DotMGBase::collide(Rect rect1, Rect rect2)
            rect2.y + rect2.height <= rect1.y);
 }
 
-void DotMGBase::swap(int16_t& a, int16_t& b)
+void swap(int16_t &a, int16_t &b)
 {
   int16_t temp = a;
   a = b;
@@ -682,11 +669,10 @@ size_t DotMG::write(uint8_t c)
   return 1;
 }
 
-void DotMG::drawChar
-  (int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size)
+void DotMG::drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color bg, uint8_t size)
 {
   uint8_t line;
-  bool draw_background = bg != color;
+  bool draw_background = bg != color;  // TODO
   const unsigned char* bitmap = font + c * 5;
 
   if ((x >= WIDTH) ||              // Clip right
@@ -737,22 +723,22 @@ int16_t DotMG::getCursorY()
   return cursor_y;
 }
 
-void DotMG::setTextColor(uint8_t color)
+void DotMG::setTextColor(Color color)
 {
   textColor = color;
 }
 
-uint8_t DotMG::getTextColor()
+Color DotMG::getTextColor()
 {
   return textColor;
 }
 
-void DotMG::setTextBackground(uint8_t bg)
+void DotMG::setTextBackground(Color color)
 {
-  textBackground = bg;
+  textBackground = color;
 }
 
-uint8_t DotMG::getTextBackground()
+Color DotMG::getTextBackground()
 {
   return textBackground;
 }

@@ -65,7 +65,6 @@ getTextColor	KEYWORD2
 getTextSize	KEYWORD2
 getTextWrap	KEYWORD2
 height	KEYWORD2
-idle	KEYWORD2
 initRandomSeed	KEYWORD2
 invert	KEYWORD2
 justPressed	KEYWORD2
