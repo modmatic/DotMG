@@ -185,11 +185,10 @@ class DotMGCore
      *
      * \details
      * The contents of the specified array in program memory are written to the
-     * display. Each byte in the array represents a vertical column of 8 pixels
-     * with the least significant bit at the top. The bytes are written starting
-     * at the top left, progressing horizontally and wrapping at the end of each
-     * row, to the bottom right. The size of the array must exactly match the
-     * number of pixels in the display area.
+     * display. Every three bytes represents a horizontal row of two 12-bit
+     * pixels, similar to `DotMGBase::frameBuffer()`.
+     *
+     * \see DotMGBase::frameBuffer()
      */
     static void paintScreen(const uint8_t *image);
 
@@ -204,11 +203,10 @@ class DotMGCore
      *
      * \details
      * The contents of the specified array in RAM are written to the display.
-     * Each byte in the array represents a vertical column of 8 pixels with
-     * the least significant bit at the top. The bytes are written starting
-     * at the top left, progressing horizontally and wrapping at the end of
-     * each row, to the bottom right. The size of the array must exactly
-     * match the number of pixels in the display area.
+     * Every three bytes represents a horizontal row of two 12-bit pixels,
+     * similar to `DotMGBase::frameBuffer()`.
+     *
+     * \see DotMGBase::frameBuffer()
      *
      * If parameter `clear` is set to `true` the RAM array will be cleared to
      * zeros after its contents are written to the display.
@@ -225,17 +223,14 @@ class DotMGCore
     static void blank();
 
     /** \brief
-     * Swap pixel and background colors, or set back to normal.
+     * Invert display colors.
      *
-     * \param inverse `true` will invert the display area. `false` will set the
-     * display area to normal.
+     * \param inverse `true` will invert the display. `false` will set the
+     * display to normal.
      *
      * \details
-     * Setting will take effect on next call to `paintScreen()`.
-     *
-     * Once in inverted mode, the display will remain this way
-     * until it is set back to non-inverted mode by calling this function with
-     * `false`.
+     * Once in inverted mode, the display will remain this way until it is
+     * set back to non-inverted mode by calling this function with `false`.
      */
     static void invert(bool inverse);
 
@@ -265,7 +260,7 @@ class DotMGCore
      *
      * \details
      * Calling this function with a value of `true` will cause the X coordinate
-     * to start at the left edge of the display instead of the right,
+     * to start at the right edge of the display instead of the left,
      * effectively flipping the display horizontally.
      *
      * Once in horizontal flip mode, it will remain this way until normal
@@ -315,11 +310,6 @@ class DotMGCore
      * \details
      * Used to power up and reinitialize the display after calling
      * `displayOff()`.
-     *
-     * \note
-     * The previous call to `displayOff()` will have caused the display's
-     * buffer contents to be lost. The display will have to be re-painted,
-     * which is usually done by calling `display()`.
      *
      * \see displayOff()
      */

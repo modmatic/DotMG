@@ -336,8 +336,8 @@ class DotMGBase : public DotMGCore
    * \details
    * Pixels are arranged in rows, from left to right.
    *
-   * The input array must be located in program memory by using the `PROGMEM`
-   * modifier.
+   * The input array must be located in program memory by declaring it as
+   * a `const`.
    */
   void drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint8_t w, uint8_t h);
 

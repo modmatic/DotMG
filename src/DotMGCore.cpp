@@ -122,21 +122,15 @@ void bootDisplay()
   SPI.transfer(0x02);
   SPI.transfer(0x10);
 
-  // Clear entire display
-  setWriteRegion(0, 0, DISP_WIDTH, DISP_HEIGHT);
-  for (int i = 0; i < DISP_WIDTH*DISP_HEIGHT/2; i++) {
-    SPI.transfer(bgColor >> 4);
-    SPI.transfer(((bgColor & 0xF) << 4) | (bgColor >> 8));
-    SPI.transfer(bgColor);
-  }
-
-  sendDisplayCommand(ST77XX_DISPON); //  Turn screen on
-  delay(100);
-
   endDisplaySPI();
 
-  drawBorder();
   blank();
+
+  // Turn screen on
+  beginDisplaySPI();
+  sendDisplayCommand(ST77XX_DISPON);
+  delay(100);
+  endDisplaySPI();
 }
 
 void DotMGCore::paintScreen(const uint8_t *image)
@@ -172,9 +166,9 @@ void DotMGCore::invert(bool inverse)
 
   inverted = inverse;
 
-  uint16_t tmp = pixelColor;
-  setPixelColor(bgColor);
-  setBackgroundColor(tmp);
+  beginDisplaySPI();
+  sendLCDCommand(inverse ? ST77XX_INVON : ST77XX_INVOFF);
+  endDisplaySPI();
 }
 
 void DotMGCore::flipVertical(bool flipped)
@@ -187,6 +181,7 @@ void DotMGCore::flipVertical(bool flipped)
   {
     MADCTL &= ~ST77XX_MADCTL_MX;
   }
+
   beginDisplaySPI();
   sendDisplayCommand(ST77XX_MADCTL);
   SPI.transfer(MADCTL);
@@ -203,6 +198,7 @@ void DotMGCore::flipHorizontal(bool flipped)
   {
     MADCTL |= ST77XX_MADCTL_MY;
   }
+
   beginDisplaySPI();
   sendDisplayCommand(ST77XX_MADCTL);
   SPI.transfer(MADCTL);

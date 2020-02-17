@@ -4,13 +4,11 @@
  * The font definitions used to display text characters.
  */
 
-#include <avr/pgmspace.h>
-
 #ifndef FONT5X7_H
 #define FONT5X7_H
 
 // standard ascii 5x7 font
-static const unsigned char font[] PROGMEM =
+static const unsigned char font[] =
 {
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x3E, 0x5B, 0x4F, 0x5B, 0x3E,
