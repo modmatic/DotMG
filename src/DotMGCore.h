@@ -41,7 +41,9 @@
 // Display values
 
 #define WIDTH       160
-#define HEIGHT      128
+#define HEIGHT      118
+#define DISP_WIDTH  160
+#define DISP_HEIGHT 128
 
 // ----- SPI/DMA configuration -----
 
@@ -150,8 +152,7 @@
 
 // --------------------
 
-// TODO
-static const int frameBufLen = 10; //WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
+static const uint16_t frameBufLen = WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
 
 /** \brief
  * Lower level functions generally dealing directly with the hardware.

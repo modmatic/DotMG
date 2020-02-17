@@ -58,7 +58,7 @@ void DotMGBase::begin()
 
 void DotMGBase::clear()
 {
-  // fillScreen(COLOR_BLACK);
+  memset(frameBuf, 0, frameBufLen);
 }
 
 void DotMGBase::display()
@@ -76,23 +76,24 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
   if (x < 0 || x > (WIDTH-1) || y < 0 || y > (HEIGHT-1))
     return;
 
-  // TODO
-  // uint16_t row_offset;
-  // uint8_t bit;
+  uint16_t c = color >> 4;  // TODO: alpha blending w/ current pixel, shifting off alpha channel for now
+  uint16_t i = (x + y*WIDTH)*3/2;
 
-  // bit = 1 << (y & 7);
-  // row_offset = y / 8 * WIDTH + x;
-  // uint8_t data = sBuffer[row_offset] | bit;
-  // if (!(color & bit(0))) data ^= bit;
-  // sBuffer[row_offset] = data;
+  if (x & 0x1) // x odd
+  {
+    frameBuf[i] |= color >> 8;  // R channel
+    frameBuf[i+1] = color;  // G, B channels
+  }
+  else  // x even
+  {
+    frameBuf[i] = color >> 4;  // R, G channels
+    frameBuf[i+1] |= (color & 0xF) << 4;  // B channel
+  }
 }
 
 Color DotMGBase::getPixel(uint8_t x, uint8_t y)
 {
   // TODO
-  // uint8_t row = y / 8;
-  // uint8_t bit_position = y % 8;
-  // return (sBuffer[(row*WIDTH) + x] & bit(bit_position)) >> bit_position;
   return COLOR_CLEAR;
 }
 

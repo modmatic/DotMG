@@ -10,6 +10,12 @@
 static uint8_t MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
 static bool inverted = false;
 
+static const uint8_t dispXStart = (DISP_WIDTH-WIDTH)/2;
+static const uint8_t dispXEnd = dispXStart+WIDTH-1;
+
+static const uint8_t dispYStart = (DISP_HEIGHT-HEIGHT)/2;
+static const uint8_t dispYEnd = dispYStart+HEIGHT-1;
+
 // Forward declarations
 
 static void bootPins();
@@ -22,7 +28,7 @@ static void sendDisplayCommand(uint8_t command);
 
 static void beginDisplaySPI();
 static void endDisplaySPI();
-static void setWriteRegion();
+static void setWriteRegion(bool all = false);
 
 // DMA
 
@@ -121,7 +127,14 @@ void bootDisplay()
 
   endDisplaySPI();
 
-  // blank(); // TODO
+  // Blank entire display
+  beginDisplaySPI();
+  setWriteRegion(true);
+  for (int i = 0; i < DISP_WIDTH*DISP_HEIGHT*12/8; i ++)
+  {
+    SPI.transfer(0xFF);  // TODO: Change back to black
+  }
+  endDisplaySPI();
 
   // Turn screen on
   beginDisplaySPI();
@@ -270,21 +283,24 @@ void endDisplaySPI()
   *portOutputRegister(IO_PORT) |= MASK_DISP_SS;
 }
 
-static void setWriteRegion()
+static void setWriteRegion(bool all)
 {
-  sendDisplayCommand(ST77XX_CASET);  //  Column addr set
+  // Set column addresses
+  sendDisplayCommand(ST77XX_CASET);
   SPI.transfer(0);
-  SPI.transfer(0);                    //  x start
+  SPI.transfer(all ? 0 : dispXStart);
   SPI.transfer(0);
-  SPI.transfer(WIDTH-1);              //  x end
+  SPI.transfer(all ? DISP_WIDTH-1 : dispXEnd);
 
-  sendDisplayCommand(ST77XX_RASET);  //  Row addr set
+  // Set row addresses
+  sendDisplayCommand(ST77XX_RASET);
   SPI.transfer(0);
-  SPI.transfer(0);                    //  y start
+  SPI.transfer(all ? 0 : dispYStart);
   SPI.transfer(0);
-  SPI.transfer(HEIGHT-1);             //  y end
+  SPI.transfer(all ? DISP_HEIGHT-1 : dispYEnd);
 
-  sendDisplayCommand(ST77XX_RAMWR);  //  Initialize write to display RAM
+  // Initialize write to display RAM
+  sendDisplayCommand(ST77XX_RAMWR);
 }
 
 

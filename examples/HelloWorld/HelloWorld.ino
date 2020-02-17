@@ -11,14 +11,14 @@ void setup() {
 }
 
 void loop() {
-  dmg.clear();
+  // dmg.clear();
 
   if (dmg.pressed(UP_BUTTON) && y > 0)
   {
     y -= 1;
   }
 
-  if (dmg.pressed(DOWN_BUTTON) && y < HEIGHT-8)
+  if (dmg.pressed(DOWN_BUTTON) && y < HEIGHT)
   {
     y += 1;
   }
@@ -28,16 +28,20 @@ void loop() {
     x -= 1;
   }
 
-  if (dmg.pressed(RIGHT_BUTTON) && x < WIDTH-6*6)
+  if (dmg.pressed(RIGHT_BUTTON) && x < WIDTH)
   {
     x += 1;
   }
 
-  dmg.setCursor(x, y);
+  dmg.setCursor(x, y+5);
   dmg.setTextColor(color);
   dmg.print(F("Hello!"));
 
-  // dmg.drawPixel(x, y, color);
+  dmg.drawPixel(x, y, color);
+  dmg.drawPixel(x-1, y, color);
+  dmg.drawPixel(x+1, y, color);
+  dmg.drawPixel(x, y-1, color);
+  dmg.drawPixel(x, y+1, color);
 
-  dmg.display();
+  dmg.display(CLEAR_BUFFER);
 }
