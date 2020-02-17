@@ -58,7 +58,7 @@ void DotMGBase::begin()
 
 void DotMGBase::clear()
 {
-  fillScreen(COLOR_BLACK);
+  // fillScreen(COLOR_BLACK);
 }
 
 void DotMGBase::display()
@@ -96,413 +96,413 @@ Color DotMGBase::getPixel(uint8_t x, uint8_t y)
   return COLOR_CLEAR;
 }
 
-void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
-{
-  int16_t f = 1 - r;
-  int16_t ddF_x = 1;
-  int16_t ddF_y = -2 * r;
-  int16_t x = 0;
-  int16_t y = r;
+// void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
+// {
+//   int16_t f = 1 - r;
+//   int16_t ddF_x = 1;
+//   int16_t ddF_y = -2 * r;
+//   int16_t x = 0;
+//   int16_t y = r;
 
-  drawPixel(x0, y0+r, color);
-  drawPixel(x0, y0-r, color);
-  drawPixel(x0+r, y0, color);
-  drawPixel(x0-r, y0, color);
+//   drawPixel(x0, y0+r, color);
+//   drawPixel(x0, y0-r, color);
+//   drawPixel(x0+r, y0, color);
+//   drawPixel(x0-r, y0, color);
 
-  while (x<y)
-  {
-    if (f >= 0)
-    {
-      y--;
-      ddF_y += 2;
-      f += ddF_y;
-    }
+//   while (x<y)
+//   {
+//     if (f >= 0)
+//     {
+//       y--;
+//       ddF_y += 2;
+//       f += ddF_y;
+//     }
 
-    x++;
-    ddF_x += 2;
-    f += ddF_x;
+//     x++;
+//     ddF_x += 2;
+//     f += ddF_x;
 
-    drawPixel(x0 + x, y0 + y, color);
-    drawPixel(x0 - x, y0 + y, color);
-    drawPixel(x0 + x, y0 - y, color);
-    drawPixel(x0 - x, y0 - y, color);
-    drawPixel(x0 + y, y0 + x, color);
-    drawPixel(x0 - y, y0 + x, color);
-    drawPixel(x0 + y, y0 - x, color);
-    drawPixel(x0 - y, y0 - x, color);
-  }
-}
+//     drawPixel(x0 + x, y0 + y, color);
+//     drawPixel(x0 - x, y0 + y, color);
+//     drawPixel(x0 + x, y0 - y, color);
+//     drawPixel(x0 - x, y0 - y, color);
+//     drawPixel(x0 + y, y0 + x, color);
+//     drawPixel(x0 - y, y0 + x, color);
+//     drawPixel(x0 + y, y0 - x, color);
+//     drawPixel(x0 - y, y0 - x, color);
+//   }
+// }
 
-void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color color)
-{
-  int16_t f = 1 - r;
-  int16_t ddF_x = 1;
-  int16_t ddF_y = -2 * r;
-  int16_t x = 0;
-  int16_t y = r;
+// void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color color)
+// {
+//   int16_t f = 1 - r;
+//   int16_t ddF_x = 1;
+//   int16_t ddF_y = -2 * r;
+//   int16_t x = 0;
+//   int16_t y = r;
 
-  while (x<y)
-  {
-    if (f >= 0)
-    {
-      y--;
-      ddF_y += 2;
-      f += ddF_y;
-    }
+//   while (x<y)
+//   {
+//     if (f >= 0)
+//     {
+//       y--;
+//       ddF_y += 2;
+//       f += ddF_y;
+//     }
 
-    x++;
-    ddF_x += 2;
-    f += ddF_x;
+//     x++;
+//     ddF_x += 2;
+//     f += ddF_x;
 
-    if (corners & 0x4) // lower right
-    {
-      drawPixel(x0 + x, y0 + y, color);
-      drawPixel(x0 + y, y0 + x, color);
-    }
-    if (corners & 0x2) // upper right
-    {
-      drawPixel(x0 + x, y0 - y, color);
-      drawPixel(x0 + y, y0 - x, color);
-    }
-    if (corners & 0x8) // lower left
-    {
-      drawPixel(x0 - y, y0 + x, color);
-      drawPixel(x0 - x, y0 + y, color);
-    }
-    if (corners & 0x1) // upper left
-    {
-      drawPixel(x0 - y, y0 - x, color);
-      drawPixel(x0 - x, y0 - y, color);
-    }
-  }
-}
+//     if (corners & 0x4) // lower right
+//     {
+//       drawPixel(x0 + x, y0 + y, color);
+//       drawPixel(x0 + y, y0 + x, color);
+//     }
+//     if (corners & 0x2) // upper right
+//     {
+//       drawPixel(x0 + x, y0 - y, color);
+//       drawPixel(x0 + y, y0 - x, color);
+//     }
+//     if (corners & 0x8) // lower left
+//     {
+//       drawPixel(x0 - y, y0 + x, color);
+//       drawPixel(x0 - x, y0 + y, color);
+//     }
+//     if (corners & 0x1) // upper left
+//     {
+//       drawPixel(x0 - y, y0 - x, color);
+//       drawPixel(x0 - x, y0 - y, color);
+//     }
+//   }
+// }
 
-void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
-{
-  drawFastVLine(x0, y0-r, 2*r+1, color);
-  fillCircleHelper(x0, y0, r, 3, 0, color);
-}
+// void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
+// {
+//   drawFastVLine(x0, y0-r, 2*r+1, color);
+//   fillCircleHelper(x0, y0, r, 3, 0, color);
+// }
 
-void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, Color color)
-{
-  int16_t f = 1 - r;
-  int16_t ddF_x = 1;
-  int16_t ddF_y = -2 * r;
-  int16_t x = 0;
-  int16_t y = r;
+// void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, Color color)
+// {
+//   int16_t f = 1 - r;
+//   int16_t ddF_x = 1;
+//   int16_t ddF_y = -2 * r;
+//   int16_t x = 0;
+//   int16_t y = r;
 
-  while (x < y)
-  {
-    if (f >= 0)
-    {
-      y--;
-      ddF_y += 2;
-      f += ddF_y;
-    }
+//   while (x < y)
+//   {
+//     if (f >= 0)
+//     {
+//       y--;
+//       ddF_y += 2;
+//       f += ddF_y;
+//     }
 
-    x++;
-    ddF_x += 2;
-    f += ddF_x;
+//     x++;
+//     ddF_x += 2;
+//     f += ddF_x;
 
-    if (sides & 0x1) // right side
-    {
-      drawFastVLine(x0+x, y0-y, 2*y+1+delta, color);
-      drawFastVLine(x0+y, y0-x, 2*x+1+delta, color);
-    }
+//     if (sides & 0x1) // right side
+//     {
+//       drawFastVLine(x0+x, y0-y, 2*y+1+delta, color);
+//       drawFastVLine(x0+y, y0-x, 2*x+1+delta, color);
+//     }
 
-    if (sides & 0x2) // left side
-    {
-      drawFastVLine(x0-x, y0-y, 2*y+1+delta, color);
-      drawFastVLine(x0-y, y0-x, 2*x+1+delta, color);
-    }
-  }
-}
+//     if (sides & 0x2) // left side
+//     {
+//       drawFastVLine(x0-x, y0-y, 2*y+1+delta, color);
+//       drawFastVLine(x0-y, y0-x, 2*x+1+delta, color);
+//     }
+//   }
+// }
 
-void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color)
-{
-  // bresenham's algorithm - thx wikpedia
-  bool steep = abs(y1 - y0) > abs(x1 - x0);
-  if (steep) {
-    swap(x0, y0);
-    swap(x1, y1);
-  }
+// void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color)
+// {
+//   // bresenham's algorithm - thx wikpedia
+//   bool steep = abs(y1 - y0) > abs(x1 - x0);
+//   if (steep) {
+//     swap(x0, y0);
+//     swap(x1, y1);
+//   }
 
-  if (x0 > x1) {
-    swap(x0, x1);
-    swap(y0, y1);
-  }
+//   if (x0 > x1) {
+//     swap(x0, x1);
+//     swap(y0, y1);
+//   }
 
-  int16_t dx, dy;
-  dx = x1 - x0;
-  dy = abs(y1 - y0);
+//   int16_t dx, dy;
+//   dx = x1 - x0;
+//   dy = abs(y1 - y0);
 
-  int16_t err = dx / 2;
-  int8_t ystep;
+//   int16_t err = dx / 2;
+//   int8_t ystep;
 
-  if (y0 < y1)
-  {
-    ystep = 1;
-  }
-  else
-  {
-    ystep = -1;
-  }
+//   if (y0 < y1)
+//   {
+//     ystep = 1;
+//   }
+//   else
+//   {
+//     ystep = -1;
+//   }
 
-  for (; x0 <= x1; x0++)
-  {
-    if (steep)
-    {
-      drawPixel(y0, x0, color);
-    }
-    else
-    {
-      drawPixel(x0, y0, color);
-    }
+//   for (; x0 <= x1; x0++)
+//   {
+//     if (steep)
+//     {
+//       drawPixel(y0, x0, color);
+//     }
+//     else
+//     {
+//       drawPixel(x0, y0, color);
+//     }
 
-    err -= dy;
-    if (err < 0)
-    {
-      y0 += ystep;
-      err += dx;
-    }
-  }
-}
+//     err -= dy;
+//     if (err < 0)
+//     {
+//       y0 += ystep;
+//       err += dx;
+//     }
+//   }
+// }
 
-void DotMGBase::drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
-{
-  drawFastHLine(x, y, w, color);
-  drawFastHLine(x, y+h-1, w, color);
-  drawFastVLine(x, y, h, color);
-  drawFastVLine(x+w-1, y, h, color);
-}
+// void DotMGBase::drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
+// {
+//   drawFastHLine(x, y, w, color);
+//   drawFastHLine(x, y+h-1, w, color);
+//   drawFastVLine(x, y, h, color);
+//   drawFastVLine(x+w-1, y, h, color);
+// }
 
-void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint8_t h, Color color)
-{
-  int end = y+h;
-  for (int a = max(0,y); a < min(end,HEIGHT); a++)
-  {
-    drawPixel(x,a,color);
-  }
-}
+// void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint8_t h, Color color)
+// {
+//   int end = y+h;
+//   for (int a = max(0,y); a < min(end,HEIGHT); a++)
+//   {
+//     drawPixel(x,a,color);
+//   }
+// }
 
-void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint8_t w, Color color)
-{
-  // TODO
-  // int16_t xEnd; // last x point + 1
+// void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint8_t w, Color color)
+// {
+//   // TODO
+//   // int16_t xEnd; // last x point + 1
 
-  // // Do y bounds checks
-  // if (y < 0 || y >= HEIGHT)
-  //   return;
+//   // // Do y bounds checks
+//   // if (y < 0 || y >= HEIGHT)
+//   //   return;
 
-  // xEnd = x + w;
+//   // xEnd = x + w;
 
-  // // Check if the entire line is not on the display
-  // if (xEnd <= 0 || x >= WIDTH)
-  //   return;
+//   // // Check if the entire line is not on the display
+//   // if (xEnd <= 0 || x >= WIDTH)
+//   //   return;
 
-  // // Don't start before the left edge
-  // if (x < 0)
-  //   x = 0;
+//   // // Don't start before the left edge
+//   // if (x < 0)
+//   //   x = 0;
 
-  // // Don't end past the right edge
-  // if (xEnd > WIDTH)
-  //   xEnd = WIDTH;
+//   // // Don't end past the right edge
+//   // if (xEnd > WIDTH)
+//   //   xEnd = WIDTH;
 
-  // // calculate actual width (even if unchanged)
-  // w = xEnd - x;
+//   // // calculate actual width (even if unchanged)
+//   // w = xEnd - x;
 
-  // // buffer pointer plus row offset + x offset
-  // register uint8_t *pBuf = sBuffer + ((y / 8) * WIDTH) + x;
+//   // // buffer pointer plus row offset + x offset
+//   // register uint8_t *pBuf = sBuffer + ((y / 8) * WIDTH) + x;
 
-  // // pixel mask
-  // register uint8_t mask = 1 << (y & 7);
+//   // // pixel mask
+//   // register uint8_t mask = 1 << (y & 7);
 
-  // switch (color)
-  // {
-  //   case WHITE:
-  //     while (w--)
-  //     {
-  //       *pBuf++ |= mask;
-  //     }
-  //     break;
+//   // switch (color)
+//   // {
+//   //   case WHITE:
+//   //     while (w--)
+//   //     {
+//   //       *pBuf++ |= mask;
+//   //     }
+//   //     break;
 
-  //   case BLACK:
-  //     mask = ~mask;
-  //     while (w--)
-  //     {
-  //       *pBuf++ &= mask;
-  //     }
-  //     break;
-  // }
-}
+//   //   case BLACK:
+//   //     mask = ~mask;
+//   //     while (w--)
+//   //     {
+//   //       *pBuf++ &= mask;
+//   //     }
+//   //     break;
+//   // }
+// }
 
-void DotMGBase::fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
-{
-  // stupidest version - update in subclasses if desired!
-  for (int16_t i=x; i<x+w; i++)
-  {
-    drawFastVLine(i, y, h, color);
-  }
-}
+// void DotMGBase::fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
+// {
+//   // stupidest version - update in subclasses if desired!
+//   for (int16_t i=x; i<x+w; i++)
+//   {
+//     drawFastVLine(i, y, h, color);
+//   }
+// }
 
-void DotMGBase::fillScreen(Color color)
-{
-  // TODO
-  // if (color != BLACK)
-  // {
-  //   color = 0xFF; // all pixels on
-  // }
-  // memset(sBuffer, color, WIDTH * HEIGHT / 8);
-}
+// void DotMGBase::fillScreen(Color color)
+// {
+//   // TODO
+//   // if (color != BLACK)
+//   // {
+//   //   color = 0xFF; // all pixels on
+//   // }
+//   // memset(sBuffer, color, WIDTH * HEIGHT / 8);
+// }
 
-void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
-{
-  // smarter version
-  drawFastHLine(x+r, y, w-2*r, color); // Top
-  drawFastHLine(x+r, y+h-1, w-2*r, color); // Bottom
-  drawFastVLine(x, y+r, h-2*r, color); // Left
-  drawFastVLine(x+w-1, y+r, h-2*r, color); // Right
-  // draw four corners
-  drawCircleHelper(x+r, y+r, r, 1, color);
-  drawCircleHelper(x+w-r-1, y+r, r, 2, color);
-  drawCircleHelper(x+w-r-1, y+h-r-1, r, 4, color);
-  drawCircleHelper(x+r, y+h-r-1, r, 8, color);
-}
+// void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
+// {
+//   // smarter version
+//   drawFastHLine(x+r, y, w-2*r, color); // Top
+//   drawFastHLine(x+r, y+h-1, w-2*r, color); // Bottom
+//   drawFastVLine(x, y+r, h-2*r, color); // Left
+//   drawFastVLine(x+w-1, y+r, h-2*r, color); // Right
+//   // draw four corners
+//   drawCircleHelper(x+r, y+r, r, 1, color);
+//   drawCircleHelper(x+w-r-1, y+r, r, 2, color);
+//   drawCircleHelper(x+w-r-1, y+h-r-1, r, 4, color);
+//   drawCircleHelper(x+r, y+h-r-1, r, 8, color);
+// }
 
-void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
-{
-  // smarter version
-  fillRect(x+r, y, w-2*r, h, color);
+// void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
+// {
+//   // smarter version
+//   fillRect(x+r, y, w-2*r, h, color);
 
-  // draw four corners
-  fillCircleHelper(x+w-r-1, y+r, r, 1, h-2*r-1, color);
-  fillCircleHelper(x+r, y+r, r, 2, h-2*r-1, color);
-}
+//   // draw four corners
+//   fillCircleHelper(x+w-r-1, y+r, r, 1, h-2*r-1, color);
+//   fillCircleHelper(x+r, y+r, r, 2, h-2*r-1, color);
+// }
 
-void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
-{
-  drawLine(x0, y0, x1, y1, color);
-  drawLine(x1, y1, x2, y2, color);
-  drawLine(x2, y2, x0, y0, color);
-}
+// void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
+// {
+//   drawLine(x0, y0, x1, y1, color);
+//   drawLine(x1, y1, x2, y2, color);
+//   drawLine(x2, y2, x0, y0, color);
+// }
 
-void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
-{
+// void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
+// {
 
-  int16_t a, b, y, last;
-  // Sort coordinates by Y order (y2 >= y1 >= y0)
-  if (y0 > y1)
-  {
-    swap(y0, y1); swap(x0, x1);
-  }
-  if (y1 > y2)
-  {
-    swap(y2, y1); swap(x2, x1);
-  }
-  if (y0 > y1)
-  {
-    swap(y0, y1); swap(x0, x1);
-  }
+//   int16_t a, b, y, last;
+//   // Sort coordinates by Y order (y2 >= y1 >= y0)
+//   if (y0 > y1)
+//   {
+//     swap(y0, y1); swap(x0, x1);
+//   }
+//   if (y1 > y2)
+//   {
+//     swap(y2, y1); swap(x2, x1);
+//   }
+//   if (y0 > y1)
+//   {
+//     swap(y0, y1); swap(x0, x1);
+//   }
 
-  if(y0 == y2)
-  { // Handle awkward all-on-same-line case as its own thing
-    a = b = x0;
-    if(x1 < a)
-    {
-      a = x1;
-    }
-    else if(x1 > b)
-    {
-      b = x1;
-    }
-    if(x2 < a)
-    {
-      a = x2;
-    }
-    else if(x2 > b)
-    {
-      b = x2;
-    }
-    drawFastHLine(a, y0, b-a+1, color);
-    return;
-  }
+//   if(y0 == y2)
+//   { // Handle awkward all-on-same-line case as its own thing
+//     a = b = x0;
+//     if(x1 < a)
+//     {
+//       a = x1;
+//     }
+//     else if(x1 > b)
+//     {
+//       b = x1;
+//     }
+//     if(x2 < a)
+//     {
+//       a = x2;
+//     }
+//     else if(x2 > b)
+//     {
+//       b = x2;
+//     }
+//     drawFastHLine(a, y0, b-a+1, color);
+//     return;
+//   }
 
-  int16_t dx01 = x1 - x0,
-      dy01 = y1 - y0,
-      dx02 = x2 - x0,
-      dy02 = y2 - y0,
-      dx12 = x2 - x1,
-      dy12 = y2 - y1,
-      sa = 0,
-      sb = 0;
+//   int16_t dx01 = x1 - x0,
+//       dy01 = y1 - y0,
+//       dx02 = x2 - x0,
+//       dy02 = y2 - y0,
+//       dx12 = x2 - x1,
+//       dy12 = y2 - y1,
+//       sa = 0,
+//       sb = 0;
 
-  // For upper part of triangle, find scanline crossings for segments
-  // 0-1 and 0-2.  If y1=y2 (flat-bottomed triangle), the scanline y1
-  // is included here (and second loop will be skipped, avoiding a /0
-  // error there), otherwise scanline y1 is skipped here and handled
-  // in the second loop...which also avoids a /0 error here if y0=y1
-  // (flat-topped triangle).
-  if (y1 == y2)
-  {
-    last = y1;   // Include y1 scanline
-  }
-  else
-  {
-    last = y1-1; // Skip it
-  }
+//   // For upper part of triangle, find scanline crossings for segments
+//   // 0-1 and 0-2.  If y1=y2 (flat-bottomed triangle), the scanline y1
+//   // is included here (and second loop will be skipped, avoiding a /0
+//   // error there), otherwise scanline y1 is skipped here and handled
+//   // in the second loop...which also avoids a /0 error here if y0=y1
+//   // (flat-topped triangle).
+//   if (y1 == y2)
+//   {
+//     last = y1;   // Include y1 scanline
+//   }
+//   else
+//   {
+//     last = y1-1; // Skip it
+//   }
 
 
-  for(y = y0; y <= last; y++)
-  {
-    a   = x0 + sa / dy01;
-    b   = x0 + sb / dy02;
-    sa += dx01;
-    sb += dx02;
+//   for(y = y0; y <= last; y++)
+//   {
+//     a   = x0 + sa / dy01;
+//     b   = x0 + sb / dy02;
+//     sa += dx01;
+//     sb += dx02;
 
-    if(a > b)
-    {
-      swap(a,b);
-    }
+//     if(a > b)
+//     {
+//       swap(a,b);
+//     }
 
-    drawFastHLine(a, y, b-a+1, color);
-  }
+//     drawFastHLine(a, y, b-a+1, color);
+//   }
 
-  // For lower part of triangle, find scanline crossings for segments
-  // 0-2 and 1-2.  This loop is skipped if y1=y2.
-  sa = dx12 * (y - y1);
-  sb = dx02 * (y - y0);
+//   // For lower part of triangle, find scanline crossings for segments
+//   // 0-2 and 1-2.  This loop is skipped if y1=y2.
+//   sa = dx12 * (y - y1);
+//   sb = dx02 * (y - y0);
 
-  for(; y <= y2; y++)
-  {
-    a   = x1 + sa / dy12;
-    b   = x0 + sb / dy02;
-    sa += dx12;
-    sb += dx02;
+//   for(; y <= y2; y++)
+//   {
+//     a   = x1 + sa / dy12;
+//     b   = x0 + sb / dy02;
+//     sa += dx12;
+//     sb += dx02;
 
-    if(a > b)
-    {
-      swap(a,b);
-    }
+//     if(a > b)
+//     {
+//       swap(a,b);
+//     }
 
-    drawFastHLine(a, y, b-a+1, color);
-  }
-}
+//     drawFastHLine(a, y, b-a+1, color);
+//   }
+// }
 
-void DotMGBase::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, Color color)
-{
-  // no need to draw at all of we're offscreen
-  if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
-    return;
+// void DotMGBase::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, Color color)
+// {
+//   // no need to draw at all of we're offscreen
+//   if (x+w < 0 || x > WIDTH-1 || y+h < 0 || y > HEIGHT-1)
+//     return;
 
-  int16_t xi, yi, byteWidth = (w + 7) / 8;
-  for(yi = 0; yi < h; yi++) {
-    for(xi = 0; xi < w; xi++ ) {
-      if(pgm_read_byte(bitmap + yi * byteWidth + xi / 8) & (128 >> (xi & 7))) {
-        drawPixel(x + xi, y + yi, color);
-      }
-    }
-  }
-}
+//   int16_t xi, yi, byteWidth = (w + 7) / 8;
+//   for(yi = 0; yi < h; yi++) {
+//     for(xi = 0; xi < w; xi++ ) {
+//       if(pgm_read_byte(bitmap + yi * byteWidth + xi / 8) & (128 >> (xi & 7))) {
+//         drawPixel(x + xi, y + yi, color);
+//       }
+//     }
+//   }
+// }
 
 uint8_t* DotMGBase::frameBuffer()
 {

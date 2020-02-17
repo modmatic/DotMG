@@ -121,7 +121,7 @@ void bootDisplay()
 
   endDisplaySPI();
 
-  blank();
+  // blank(); // TODO
 
   // Turn screen on
   beginDisplaySPI();
