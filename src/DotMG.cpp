@@ -71,13 +71,21 @@ void DotMGBase::display(bool clear)
   paintScreen(frameBuf, clear);
 }
 
+static uint16_t blend(Color a, Color b)
+{
+  uint8_t alpha = a & 0xF;
+  uint16_t x = a >> 4;
+  uint16_t y = b >> 4;
+  return 0x0FFF; //(x*(0xF-alpha) + y*alpha)/0xF;
+}
+
 void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
 {
   if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
     return;
 
-  uint16_t c = color >> 4;  // TODO: alpha blending w/ current pixel, shifting off alpha channel for now
-  int i = (x + y*WIDTH)*3/2;
+  uint16_t c = blend(color, getPixel(x, y));
+  int i = ((x + y*WIDTH)*3) >> 1;
 
   if (x & 0x1) // x odd
   {
@@ -93,16 +101,16 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
 
 Color DotMGBase::getPixel(uint8_t x, uint8_t y)
 {
-  int i = (x + y*WIDTH)*3/2;
+  int i = ((x + y*WIDTH)*3) >> 1;
   if (x & 0x1) // x odd
   {
-    //          R channel           G, B channels      alpha
-    return (frameBuf[i] << 12) | (frameBuf[i+1] << 4) | 0xF;
+    //              R channel                G, B channels      alpha
+    return ((frameBuf[i] & 0xF) << 12) | (frameBuf[i+1] << 4) | 0xF;
   }
   else  // x even
   {
-    //        R, G channels           B channel       alpha
-    return (frameBuf[i] << 8) | (frameBuf[i+1] >> 8) | 0xF;
+    //        R, G channels               B channel      alpha
+    return (frameBuf[i] << 8) | (frameBuf[i+1] & 0xF0) | 0xF;
   }
 }
 
@@ -541,6 +549,11 @@ bool DotMGBase::everyXFrames(uint8_t frames)
 int DotMGBase::cpuLoad()
 {
   return lastFrameDurationMs*100 / eachFrameMillis;
+}
+
+uint8_t DotMGBase::actualFrameRate()
+{
+  return 1000 / lastFrameDurationMs;
 }
 
 

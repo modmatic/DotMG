@@ -171,7 +171,7 @@ class DotMGBase : public DotMGCore
    * it represents the result of any previous blending that might have occurred
    * during a `draw*()` function.
    */
-  Color getPixel(uint8_t x, uint8_t y);
+  static Color getPixel(uint8_t x, uint8_t y);
 
   /** \brief
    * Draw a circle of a given radius.
@@ -534,6 +534,9 @@ class DotMGBase : public DotMGCore
    * \see setFrameRate() nextFrame()
    */
   static int cpuLoad();
+
+  // TODO: document
+  static uint8_t actualFrameRate();
 
   /** \brief
    * Test if the specified buttons are pressed.
