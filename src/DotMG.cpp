@@ -43,7 +43,7 @@ static uint8_t lastFrameDurationMs;
 static void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color color = COLOR_WHITE);
 
 // Draw one or both vertical halves of a filled-in circle or rounded rectangle edge.
-static void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, uint16_t color = COLOR_WHITE);
+static void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, Color color = COLOR_WHITE);
 
 static void swap(int16_t &a, int16_t &b);
 
@@ -58,7 +58,7 @@ void DotMGBase::begin()
 
 void DotMGBase::clear()
 {
-  memset(frameBuf, 0, frameBufLen);
+  wipe(frameBuf);
 }
 
 void DotMGBase::display()
@@ -81,13 +81,13 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
 
   if (x & 0x1) // x odd
   {
-    frameBuf[i] |= c >> 8;  // R channel
-    frameBuf[i+1] = c;  // G, B channels
+    frameBuf[i] = (frameBuf[i] & 0xF0) | (c >> 8);  // R channel
+    frameBuf[i+1] = c & 0xFF;  // G, B channels
   }
   else  // x even
   {
     frameBuf[i] = c >> 4;  // R, G channels
-    frameBuf[i+1] |= (c & 0xF) << 4;  // B channel
+    frameBuf[i+1] = ((c & 0xF) << 4) | (frameBuf[i+1] & 0xF);  // B channel
   }
 }
 
@@ -309,7 +309,11 @@ void DotMGBase::fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color
   // stupidest version - update in subclasses if desired!
   for (int16_t i=x; i<x+w; i++)
   {
-    drawFastVLine(i, y, h, color);
+    // drawFastVLine(i, y, h, color);
+    for (int16_t j=y; j<y+h; j++)
+    {
+      drawPixel(i, j, color);
+    }
   }
 }
 
@@ -606,7 +610,7 @@ void swap(int16_t &a, int16_t &b)
   static int16_t cursor_x;
   static int16_t cursor_y;
   static Color textColor = COLOR_WHITE;
-  static Color textBackground = COLOR_BLUE; //COLOR_CLEAR;
+  static Color textBackground = COLOR_CLEAR;
   static uint8_t textSize = 1;
   static bool textWrap;
 

@@ -322,6 +322,7 @@ class DotMGCore
 
   protected:
     static void boot();
+    static void wipe(uint8_t image[]);
 };
 
 #endif

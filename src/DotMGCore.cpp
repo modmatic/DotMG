@@ -155,7 +155,12 @@ void DotMGCore::paintScreen(uint8_t image[], bool clear)
   DMATransfer(image, frameBufLen);
 
   if (clear)
-    memset(image, 0, frameBufLen);
+    wipe(image);
+}
+
+void DotMGCore::wipe(uint8_t image[])
+{
+  memset(image, 0, frameBufLen);
 }
 
 void DotMGCore::blank()
