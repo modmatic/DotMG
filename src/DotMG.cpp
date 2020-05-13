@@ -76,7 +76,7 @@ static uint16_t blend(Color a, Color b)
   uint8_t alpha = a & 0xF;
   uint16_t x = a >> 4;
   uint16_t y = b >> 4;
-  return 0x0FFF; //(x*(0xF-alpha) + y*alpha)/0xF;
+  return (x*alpha + y*(0xF-alpha))/0xF;
 }
 
 void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)

@@ -4,9 +4,10 @@
 DotMG dmg;
 
 int x = WIDTH/2, y = HEIGHT/2;
-Color color = COLOR_CYAN;
+Color color = Color(0x0, 0x8, 0xf, 0x8);
 
 void setup() {
+  // while (!Serial);
   dmg.setFrameRate(60);
   dmg.begin();
   dmg.setTextSize(1);
@@ -16,7 +17,7 @@ void loop() {
   if (!dmg.nextFrame())
     return;
 
-  dmg.clear();
+  // dmg.clear();
 
   if (dmg.pressed(UP_BUTTON) && y >= 0)
   {
@@ -39,10 +40,11 @@ void loop() {
   }
 
   // dmg.fillScreen(COLOR_GRAY);
-  // dmg.fillScreen(COLOR_BLUE);
+  // dmg.fillScreen(COLOR_WHITE);
   // dmg.fillScreen(COLOR_BLACK);
 
 
+  dmg.fillCircle(60, 60, 10, COLOR_RED);
   dmg.fillCircle(x, y, 10, color);
 
   // dmg.fillCircle(x, y, 10, COLOR_GREEN);
@@ -57,5 +59,5 @@ void loop() {
   dmg.print(dmg.cpuLoad());
   dmg.print(F("%"));
 
-  dmg.display();
+  dmg.display(CLEAR_BUFFER);
 }

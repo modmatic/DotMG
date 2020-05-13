@@ -41,56 +41,47 @@
 // Display values
 
 #define WIDTH       160
-#define HEIGHT      118
-#define DISP_WIDTH  160
-#define DISP_HEIGHT 128
-
-// ----- SPI/DMA configuration -----
-
-#define SPI_SETTINGS        SPISettings(24000000, MSBFIRST, SPI_MODE0)
-#define SPI_SERCOM          SERCOM1
-#define DMA_TRIGGER_SRC     SERCOM1_DMAC_ID_TX
-#define DMA_CHAN            0u
-
+#define HEIGHT      128
 
 // ----- Pins -----
 
-#define IO_PORT             (&(PORT->Group[PORTA]))
+#define PORT_ST_SEL_UP_RT   (&(PORT->Group[PORTA]))
+#define PORT_A_B_DN_LF      (&(PORT->Group[PORTB]))
+#define PORT_DISP_DC_LED    (&(PORT->Group[PORTA]))
 
-#define PIN_DISP_SS         16
-#define MASK_DISP_SS        digitalPinToBitMask(PIN_DISP_SS)
-
-#define PIN_DISP_DC         17
 #define MASK_DISP_DC        digitalPinToBitMask(PIN_DISP_DC)
+#define MASK_DISP_LED       digitalPinToBitMask(PIN_DISP_LED)
+#define MASK_SPI_MOSI       digitalPinToBitMask(PIN_SPI_DISP_MOSI)
+#define MASK_SPI_SCK        digitalPinToBitMask(PIN_SPI_DISP_SCK)
 
-#define MASK_SPI_MOSI       digitalPinToBitMask(PIN_SPI_MOSI)
-#define MASK_SPI_SCK        digitalPinToBitMask(PIN_SPI_SCK)
-
-#define PIN_BUTTON_A        9
+#define PIN_BUTTON_A        20
 #define MASK_BUTTON_A       digitalPinToBitMask(PIN_BUTTON_A)
 
-#define PIN_BUTTON_B        10
+#define PIN_BUTTON_B        21
 #define MASK_BUTTON_B       digitalPinToBitMask(PIN_BUTTON_B)
 
-#define PIN_BUTTON_UP       5
+#define PIN_BUTTON_UP       18
 #define MASK_BUTTON_UP      digitalPinToBitMask(PIN_BUTTON_UP)
 
-#define PIN_BUTTON_DOWN     6
+#define PIN_BUTTON_DOWN     4
 #define MASK_BUTTON_DOWN    digitalPinToBitMask(PIN_BUTTON_DOWN)
 
-#define PIN_BUTTON_LEFT     7
+#define PIN_BUTTON_LEFT     5
 #define MASK_BUTTON_LEFT    digitalPinToBitMask(PIN_BUTTON_LEFT)
 
-#define PIN_BUTTON_RIGHT    8
+#define PIN_BUTTON_RIGHT    19
 #define MASK_BUTTON_RIGHT   digitalPinToBitMask(PIN_BUTTON_RIGHT)
 
-#define PIN_BUTTON_START    14
+#define PIN_BUTTON_START    0
 #define MASK_BUTTON_START   digitalPinToBitMask(PIN_BUTTON_START)
 
-#define PIN_BUTTON_SELECT   15
+#define PIN_BUTTON_SELECT   1
 #define MASK_BUTTON_SELECT  digitalPinToBitMask(PIN_BUTTON_SELECT)
 
-#define PIN_SPEAKER         PIN_DAC0
+#define PIN_SPEAKER         PIN_DAC1
+#define DAC_CH_SPEAKER      1
+#define DAC_READY           DAC->STATUS.bit.READY1
+#define DAC_DATA_BUSY       DAC->SYNCBUSY.bit.DATA1
 
 
 // ----- For display configuration (ST7735R) -----
