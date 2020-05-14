@@ -177,9 +177,6 @@ class DotMGCore
      *
      * \param image A byte array in RAM representing the entire contents of
      * the display.
-     * \param clear If `true` the array in RAM will be cleared to zeros upon
-     * return from this function. If `false` the RAM buffer will remain
-     * unchanged. (optional; defaults to `false`)
      *
      * \details
      * The contents of the specified array in RAM are written to the display.
@@ -187,11 +184,8 @@ class DotMGCore
      * similar to `DotMGBase::frameBuffer()`.
      *
      * \see DotMGBase::frameBuffer()
-     *
-     * If parameter `clear` is set to `true` the RAM array will be cleared to
-     * zeros after its contents are written to the display.
      */
-    static void paintScreen(uint8_t image[], bool clear = false);
+    static void paintScreen(uint8_t image[]);
 
     /** \brief
      * Blank the display screen by setting all pixels off.

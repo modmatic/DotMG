@@ -127,26 +127,14 @@ void bootDisplay()
 
 void DotMGCore::paintScreen(const uint8_t *image)
 {
-  paintScreen((uint8_t *)image, false);
+  paintScreen((uint8_t *)image);
 }
 
-static uint8_t bufCopy[frameBufLen];
-void DotMGCore::paintScreen(uint8_t image[], bool clear)
+void DotMGCore::paintScreen(uint8_t image[])
 {
   beginDisplaySPI();
-  // Transfer a copy of the buffer so we can wipe the original in parallel
-  memcpy(bufCopy, image, frameBufLen);
   setWriteRegion();
-  dispSPI.transfer(bufCopy, NULL, frameBufLen, false);
-
-  if (clear)
-    wipe(image);
-}
-
-void DotMGCore::wipe(uint8_t image[])
-{
-  // dispSPI.waitForTransfer();
-  memset(image, 0, frameBufLen);
+  dispSPI.transfer(image, NULL, frameBufLen, false);
 }
 
 void DotMGCore::blank()

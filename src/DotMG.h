@@ -12,8 +12,6 @@
 #include "DotMGCore.h"
 #include <Print.h>
 
-#define CLEAR_BUFFER true /**< Value to be passed to `display()` to clear the screen buffer. */
-
 
 //=============================================
 //========== Rect (rectangle) object ==========
@@ -31,10 +29,10 @@
  */
 struct Rect
 {
-  int16_t x;      /**< The X coordinate of the top left corner */
-  int16_t y;      /**< The Y coordinate of the top left corner */
-  uint8_t width;  /**< The width of the rectangle */
-  uint8_t height; /**< The height of the rectangle */
+  int16_t x;       /**< The X coordinate of the top left corner */
+  int16_t y;       /**< The Y coordinate of the top left corner */
+  uint16_t width;  /**< The width of the rectangle */
+  uint16_t height; /**< The height of the rectangle */
 
   /** \brief
    * The default constructor
@@ -49,7 +47,7 @@ struct Rect
    * \param width The width of the rectangle. Copied to variable `width`.
    * \param height The height of the rectangle. Copied to variable `height`.
    */
-  Rect(int16_t x, int16_t y, uint8_t width, uint8_t height);
+  Rect(int16_t x, int16_t y, uint16_t width, uint16_t height);
 };
 
 //==================================
@@ -115,40 +113,20 @@ class DotMGBase : public DotMGCore
    * \details
    * The entire contents of the screen buffer are cleared to `COLOR_BLACK`.
    *
-   * \see display(bool)
+   * \see display()
    */
   static void clear();
 
   /** \brief
-   * Copy the contents of the display buffer to the display.
+   * Move the contents of the display buffer to the display.
    *
    * \details
-   * The contents of the display buffer in RAM are copied to the display and
-   * will appear on the screen.
+   * The contents of the display buffer in RAM are moved to the display and
+   * will appear on the screen. The buffer will then be cleared.
    *
-   * \see display(bool)
+   * \see clear()
    */
   static void display();
-
-  /** \brief
-   * Copy the contents of the display buffer to the display. The display buffer
-   * can optionally be cleared.
-   *
-   * \param clear If `true` the display buffer will be cleared to zero.
-   * The defined value `CLEAR_BUFFER` should be used instead of `true` to make
-   * it more meaningful.
-   *
-   * \details
-   * Operation is the same as calling `display()` without parameters except
-   * additionally the display buffer will be cleared if the parameter evaluates
-   * to `true`. (The defined value `CLEAR_BUFFER` can be used for this)
-   *
-   * Using `display(CLEAR_BUFFER)` is faster and produces less code than
-   * calling `display()` followed by `clear()`.
-   *
-   * \see display() clear()
-   */
-  static void display(bool clear);
 
   /** \brief
    * Set a single pixel in the display buffer to the specified color.
@@ -170,8 +148,10 @@ class DotMGBase : public DotMGCore
    * (if no additional drawing occurs at the pixel's location). In other words,
    * it represents the result of any previous blending that might have occurred
    * during a `draw*()` function.
+   *
+   * If the given coordinate is not on the screen, `COLOR_CLEAR` will be returned.
    */
-  static Color getPixel(uint8_t x, uint8_t y);
+  static Color getPixel(int16_t x, int16_t y);
 
   /** \brief
    * Draw a circle of a given radius.
@@ -181,7 +161,7 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
    */
-  static void drawCircle(int16_t x0, int16_t y0, uint8_t r, Color color = COLOR_WHITE);
+  static void drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in circle of a given radius.
@@ -191,7 +171,7 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
    */
-  static void fillCircle(int16_t x0, int16_t y0, uint8_t r, Color color = COLOR_WHITE);
+  static void fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a line between two specified points.
@@ -215,7 +195,7 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
    */
-  static void drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color = COLOR_WHITE);
+  static void drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a vertical line.
@@ -225,7 +205,7 @@ class DotMGBase : public DotMGCore
    * \param h The height of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
    */
-  static void drawFastVLine(int16_t x, int16_t y, uint8_t h, Color color = COLOR_WHITE);
+  static void drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a horizontal line.
@@ -235,7 +215,7 @@ class DotMGBase : public DotMGCore
    * \param w The width of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
    */
-  static void drawFastHLine(int16_t x, int16_t y, uint8_t w, Color color = COLOR_WHITE);
+  static void drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in rectangle of a specified width and height.
@@ -246,7 +226,7 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
    */
-  static void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color = COLOR_WHITE);
+  static void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE);
 
   /** \brief
    * Fill the screen buffer with the specified color.
@@ -265,7 +245,7 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
    */
-  static void drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color = COLOR_WHITE);
+  static void drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a filled-in rectangle with rounded corners.
@@ -277,7 +257,7 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
    */
-  static void fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color = COLOR_WHITE);
+  static void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE);
 
   /** \brief
    * Draw a triangle given the coordinates of each corner.
@@ -320,7 +300,7 @@ class DotMGBase : public DotMGCore
    * The input array must be located in program memory by declaring it as
    * a `const`.
    */
-  static void drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint8_t w, uint8_t h);
+  static void drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint16_t w, uint16_t h);
 
   /** \brief
    * Get a pointer to the display buffer in RAM.
@@ -408,7 +388,7 @@ class DotMGBase : public DotMGCore
    *
    * \see nextFrame() everyXFrames()
    */
-  static uint8_t frameCount();
+  static uint16_t frameCount();
 
   /** \brief
    * Set the frame rate used by the frame control functions.
@@ -456,7 +436,7 @@ class DotMGBase : public DotMGCore
    *
    * \see nextFrame() setFrameRate()
    */
-  static void setFrameDuration(uint8_t duration);
+  static void setFrameDuration(uint16_t duration);
 
   /** \brief
    * Indicate that it's time to render the next frame.
@@ -510,7 +490,7 @@ class DotMGBase : public DotMGCore
    *
    * \see setFrameRate() nextFrame()
    */
-  static bool everyXFrames(uint8_t frames);
+  static bool everyXFrames(uint16_t frames);
 
   /** \brief
    * Return the load on the CPU as a percentage.
@@ -535,8 +515,9 @@ class DotMGBase : public DotMGCore
    */
   static int cpuLoad();
 
-  // TODO: document
+  // TODO: document these
   static uint8_t actualFrameRate();
+  static uint16_t actualFrameDurationMs();
 
   /** \brief
    * Test if the specified buttons are pressed.

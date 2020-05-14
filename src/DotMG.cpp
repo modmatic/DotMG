@@ -11,7 +11,7 @@
 //========== class Rect ==========
 //================================
 
-Rect::Rect(int16_t x, int16_t y, uint8_t width, uint8_t height)
+Rect::Rect(int16_t x, int16_t y, uint16_t width, uint16_t height)
  : x(x), y(y), width(width), height(height)
 {
 }
@@ -32,21 +32,23 @@ Point::Point(int16_t x, int16_t y)
 static uint8_t currentButtonState;
 static uint8_t previousButtonState;
 
-static uint8_t frameBuf[frameBufLen];
-static uint8_t currFrame;
-static uint8_t eachFrameMillis = 16;
-static uint8_t thisFrameStart;
+static uint8_t buf1[frameBufLen];
+static uint8_t buf2[frameBufLen];
+static uint8_t *frameBuf = buf1;
+static uint8_t *frameBuf2 = buf2;
+static uint16_t currFrame;
+static uint16_t eachFrameMillis = 16;
+static uint16_t thisFrameStart;
 static bool justRendered;
-static uint8_t lastFrameDurationMs;
+static uint16_t lastFrameDurationMs;
 
 // Draw one or more "corners" of a circle.
-static void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color color = COLOR_WHITE);
+static void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color = COLOR_WHITE);
 
 // Draw one or both vertical halves of a filled-in circle or rounded rectangle edge.
-static void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, Color color = COLOR_WHITE);
+static void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t delta, Color color = COLOR_WHITE);
 
 static void swap(int16_t &a, int16_t &b);
-
 
 void DotMGBase::begin()
 {
@@ -58,25 +60,29 @@ void DotMGBase::begin()
 
 void DotMGBase::clear()
 {
-  wipe(frameBuf);
+  memset(frameBuf, 0, frameBufLen);
 }
 
 void DotMGBase::display()
 {
+  // Draw current frame buffer
   paintScreen(frameBuf);
+
+  // Swap in and prepare next frame buffer
+  uint8_t *tmp = frameBuf;
+  frameBuf = frameBuf2;
+  frameBuf2 = tmp;
+  clear();
 }
 
-void DotMGBase::display(bool clear)
+static uint16_t blend(Color c1, Color c2)
 {
-  paintScreen(frameBuf, clear);
-}
-
-static uint16_t blend(Color a, Color b)
-{
-  uint8_t alpha = a & 0xF;
-  uint16_t x = a >> 4;
-  uint16_t y = b >> 4;
-  return (x*alpha + y*(0xF-alpha))/0xF;
+  uint8_t a0 = c1.a;
+  uint8_t a1 = 0xF - c1.a;
+  uint8_t r = (c1.r * a0 + c2.r * a1)/0xF;
+  uint8_t g = (c1.g * a0 + c2.g * a1)/0xF;
+  uint8_t b = (c1.b * a0 + c2.b * a1)/0xF;
+  return r << 8 | g << 4 | b;
 }
 
 void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
@@ -99,8 +105,11 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
   }
 }
 
-Color DotMGBase::getPixel(uint8_t x, uint8_t y)
+Color DotMGBase::getPixel(int16_t x, int16_t y)
 {
+  if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+    return COLOR_CLEAR;
+
   int i = ((x + y*WIDTH)*3) >> 1;
   if (x & 0x1) // x odd
   {
@@ -114,52 +123,31 @@ Color DotMGBase::getPixel(uint8_t x, uint8_t y)
   }
 }
 
-void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
+void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color)
 {
-  int16_t f = 1 - r;
-  int16_t ddF_x = 1;
-  int16_t ddF_y = -2 * r;
-  int16_t x = 0;
-  int16_t y = r;
+  if (r == 0)
+  {
+    drawPixel(x0, y0, color);
+    return;
+  }
 
   drawPixel(x0, y0+r, color);
   drawPixel(x0, y0-r, color);
   drawPixel(x0+r, y0, color);
   drawPixel(x0-r, y0, color);
 
-  while (x<y)
-  {
-    if (f >= 0)
-    {
-      y--;
-      ddF_y += 2;
-      f += ddF_y;
-    }
-
-    x++;
-    ddF_x += 2;
-    f += ddF_x;
-
-    drawPixel(x0 + x, y0 + y, color);
-    drawPixel(x0 - x, y0 + y, color);
-    drawPixel(x0 + x, y0 - y, color);
-    drawPixel(x0 - x, y0 - y, color);
-    drawPixel(x0 + y, y0 + x, color);
-    drawPixel(x0 - y, y0 + x, color);
-    drawPixel(x0 + y, y0 - x, color);
-    drawPixel(x0 - y, y0 - x, color);
-  }
+  drawCircleHelper(x0, y0, r, 0xF, color);
 }
 
-void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color color)
+void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color)
 {
-  int16_t f = 1 - r;
+  int16_t f = -r;
   int16_t ddF_x = 1;
   int16_t ddF_y = -2 * r;
   int16_t x = 0;
   int16_t y = r;
 
-  while (x<y)
+  while (x < y-1)
   {
     if (f >= 0)
     {
@@ -175,42 +163,62 @@ void drawCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t corners, Color 
     if (corners & 0x4) // lower right
     {
       DotMGBase::drawPixel(x0 + x, y0 + y, color);
-      DotMGBase::drawPixel(x0 + y, y0 + x, color);
+
+      if (x != y)
+        DotMGBase::drawPixel(x0 + y, y0 + x, color);
     }
+
     if (corners & 0x2) // upper right
     {
       DotMGBase::drawPixel(x0 + x, y0 - y, color);
-      DotMGBase::drawPixel(x0 + y, y0 - x, color);
+
+      if (x != y)
+        DotMGBase::drawPixel(x0 + y, y0 - x, color);
     }
+
     if (corners & 0x8) // lower left
     {
       DotMGBase::drawPixel(x0 - y, y0 + x, color);
-      DotMGBase::drawPixel(x0 - x, y0 + y, color);
+
+      if (x != y)
+        DotMGBase::drawPixel(x0 - x, y0 + y, color);
     }
+
     if (corners & 0x1) // upper left
     {
       DotMGBase::drawPixel(x0 - y, y0 - x, color);
-      DotMGBase::drawPixel(x0 - x, y0 - y, color);
+
+      if (x != y)
+        DotMGBase::drawPixel(x0 - x, y0 - y, color);
     }
   }
 }
 
-void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint8_t r, Color color)
+void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color)
 {
+  if (r == 0)
+  {
+    drawPixel(x0, y0, color);
+    return;
+  }
+
   drawFastVLine(x0, y0-r, 2*r+1, color);
   fillCircleHelper(x0, y0, r, 3, 0, color);
 }
 
-void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t delta, Color color)
+void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t delta, Color color)
 {
-  int16_t f = 1 - r;
+  int16_t f = -r;
   int16_t ddF_x = 1;
   int16_t ddF_y = -2 * r;
   int16_t x = 0;
   int16_t y = r;
 
-  while (x < y)
+  while (x <= y)
   {
+    uint16_t lastX = x;
+    uint16_t lastY = y;
+
     if (f >= 0)
     {
       y--;
@@ -224,14 +232,20 @@ void fillCircleHelper(int16_t x0, int16_t y0, uint8_t r, uint8_t sides, int16_t 
 
     if (sides & 0x1) // right side
     {
-      DotMGBase::drawFastVLine(x0+x, y0-y, 2*y+1+delta, color);
-      DotMGBase::drawFastVLine(x0+y, y0-x, 2*x+1+delta, color);
+      if (lastX != 0)
+        DotMGBase::drawFastVLine(x0+lastX, y0-lastY, 2*lastY+1+delta, color);
+
+      if (lastX != lastY && y != lastY)
+        DotMGBase::drawFastVLine(x0+lastY, y0-lastX, 2*lastX+1+delta, color);
     }
 
     if (sides & 0x2) // left side
     {
-      DotMGBase::drawFastVLine(x0-x, y0-y, 2*y+1+delta, color);
-      DotMGBase::drawFastVLine(x0-y, y0-x, 2*x+1+delta, color);
+      if (lastX != 0)
+        DotMGBase::drawFastVLine(x0-lastX, y0-lastY, 2*lastY+1+delta, color);
+
+      if (lastX != lastY && y != lastY)
+        DotMGBase::drawFastVLine(x0-lastY, y0-lastX, 2*lastX+1+delta, color);
     }
   }
 }
@@ -286,7 +300,7 @@ void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color c
   }
 }
 
-void DotMGBase::drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
+void DotMGBase::drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color)
 {
   drawFastHLine(x, y, w, color);
   drawFastHLine(x, y+h-1, w, color);
@@ -294,7 +308,7 @@ void DotMGBase::drawRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color
   drawFastVLine(x+w-1, y, h, color);
 }
 
-void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint8_t h, Color color)
+void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color)
 {
   int end = y+h;
   for (int a = max(0, y); a < min(end, HEIGHT); a++)
@@ -303,7 +317,7 @@ void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint8_t h, Color color)
   }
 }
 
-void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint8_t w, Color color)
+void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color)
 {
   int end = x+w;
   for (int a = max(0, x); a < min(end, WIDTH); a++)
@@ -312,7 +326,7 @@ void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint8_t w, Color color)
   }
 }
 
-void DotMGBase::fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, Color color)
+void DotMGBase::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color)
 {
   // stupidest version - update in subclasses if desired!
   for (int16_t i=x; i<x+w; i++)
@@ -336,7 +350,7 @@ void DotMGBase::fillScreen(Color color)
   }
 }
 
-void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
+void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color)
 {
   // smarter version
   drawFastHLine(x+r, y, w-2*r, color); // Top
@@ -350,7 +364,7 @@ void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_
   drawCircleHelper(x+r, y+h-r-1, r, 8, color);
 }
 
-void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r, Color color)
+void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color)
 {
   // smarter version
   fillRect(x+r, y, w-2*r, h, color);
@@ -469,7 +483,7 @@ void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int
   }
 }
 
-void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint8_t w, uint8_t h)
+void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint16_t w, uint16_t h)
 {
   if (x+w < 0 || x >= WIDTH || y+h < 0 || y >= HEIGHT)
     return;
@@ -504,7 +518,7 @@ void DotMGBase::initRandomSeed()
 
 /* Frame management */
 
-uint8_t DotMGBase::frameCount()
+uint16_t DotMGBase::frameCount()
 {
   return currFrame;
 }
@@ -514,15 +528,15 @@ void DotMGBase::setFrameRate(uint8_t rate)
   eachFrameMillis = 1000 / rate;
 }
 
-void DotMGBase::setFrameDuration(uint8_t duration)
+void DotMGBase::setFrameDuration(uint16_t duration)
 {
   eachFrameMillis = duration;
 }
 
 bool DotMGBase::nextFrame()
 {
-  uint8_t now = (uint8_t) millis();
-  uint8_t frameDurationMs = now - thisFrameStart;
+  uint16_t now = (uint16_t) millis();
+  uint16_t frameDurationMs = now - thisFrameStart;
 
   if (justRendered) {
     lastFrameDurationMs = frameDurationMs;
@@ -541,7 +555,7 @@ bool DotMGBase::nextFrame()
   return true;
 }
 
-bool DotMGBase::everyXFrames(uint8_t frames)
+bool DotMGBase::everyXFrames(uint16_t frames)
 {
   return currFrame % frames == 0;
 }
@@ -554,6 +568,11 @@ int DotMGBase::cpuLoad()
 uint8_t DotMGBase::actualFrameRate()
 {
   return 1000 / lastFrameDurationMs;
+}
+
+uint16_t DotMGBase::actualFrameDurationMs()
+{
+  return lastFrameDurationMs;
 }
 
 
