@@ -203,6 +203,14 @@ void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color)
   }
 
   drawFastVLine(x0, y0-r, 2*r+1, color);
+
+  if (r == 1)
+  {
+    drawPixel(x0-1, y0, color);
+    drawPixel(x0+1, y0, color);
+    return;
+  }
+
   fillCircleHelper(x0, y0, r, 3, 0, color);
 }
 
