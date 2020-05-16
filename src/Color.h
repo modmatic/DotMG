@@ -37,6 +37,11 @@ class Color
 {
 public:
   /** \brief
+   * Constructs a default 16-bit 4444-formatted RGBA color value.
+   */
+  Color() {}
+
+  /** \brief
    * Constructs a 16-bit 4444-formatted RGBA color value from individual 4-bit
    * RGBA channels.
    *

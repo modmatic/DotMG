@@ -10,6 +10,12 @@
 static uint8_t MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
 static bool inverted = false;
 
+static const uint16_t stageLen = WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
+static uint8_t buf1[stageLen];
+static uint8_t buf2[stageLen];
+uint8_t *DotMGCore::stage = buf1;
+static uint8_t *stage2 = buf2;
+
 static SPIClass dispSPI(
     &PERIPH_SPI_DISP,
     PIN_SPI_DISP_MISO,
@@ -29,7 +35,6 @@ static void displayCommandMode();
 static void sendDisplayCommand(uint8_t command);
 
 static void beginDisplaySPI();
-static void endDisplaySPI();
 static void setWriteRegion();
 
 
@@ -121,31 +126,31 @@ void bootDisplay()
   dispSPI.transfer(0x10);
 
   DotMGCore::blank();
+
+  beginDisplaySPI();  // SPI ended by blank() call above, so begin again
   sendDisplayCommand(ST77XX_DISPON); //  Turn screen on
   delay(100);
 }
 
-void DotMGCore::paintScreen(const uint8_t *image)
+void DotMGCore::blit()
 {
-  paintScreen((uint8_t *)image);
-}
-
-void DotMGCore::paintScreen(uint8_t image[])
-{
+  // Prepare for sending
   beginDisplaySPI();
   setWriteRegion();
-  dispSPI.transfer(image, NULL, frameBufLen, false);
+
+  // Send bytes asychronously
+  dispSPI.transfer(stage, NULL, stageLen, false);
+
+  // Meanwhile, prepare next stage buffer
+  uint8_t *tmp = stage;
+  stage = stage2;
+  stage2 = tmp;
 }
 
 void DotMGCore::blank()
 {
-  beginDisplaySPI();
-  setWriteRegion();
-  for (int i = 0; i < frameBufLen; i ++)
-  {
-    // TODO: Maybe use DMA here
-    dispSPI.transfer(0);
-  }
+  memset(stage, 0, stageLen);
+  blit();
 }
 
 void DotMGCore::invert(bool inverse)

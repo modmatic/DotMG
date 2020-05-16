@@ -143,8 +143,6 @@
 
 // --------------------
 
-static const uint16_t frameBufLen = WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
-
 /** \brief
  * Lower level functions generally dealing directly with the hardware.
  *
@@ -156,36 +154,6 @@ class DotMGCore
 {
   public:
     DotMGCore();
-
-    /** \brief
-     * Paints an entire image directly to the display from program memory.
-     *
-     * \param image A byte array in program memory representing the entire
-     * contents of the display.
-     *
-     * \details
-     * The contents of the specified array in program memory are written to the
-     * display. Every three bytes represents a horizontal row of two 12-bit
-     * pixels, similar to `DotMGBase::frameBuffer()`.
-     *
-     * \see DotMGBase::frameBuffer()
-     */
-    static void paintScreen(const uint8_t *image);
-
-    /** \brief
-     * Paints an entire image directly to the display from an array in RAM.
-     *
-     * \param image A byte array in RAM representing the entire contents of
-     * the display.
-     *
-     * \details
-     * The contents of the specified array in RAM are written to the display.
-     * Every three bytes represents a horizontal row of two 12-bit pixels,
-     * similar to `DotMGBase::frameBuffer()`.
-     *
-     * \see DotMGBase::frameBuffer()
-     */
-    static void paintScreen(uint8_t image[]);
 
     /** \brief
      * Blank the display screen by setting all pixels off.
@@ -307,7 +275,23 @@ class DotMGCore
 
   protected:
     static void boot();
-    static void wipe(uint8_t image[]);
+
+    /*
+     * Every three bytes of the display's internal format specify a horizontal row of
+     * two pixels, with the most significant bit at the left end of the row. Pixels
+     * are 12-bit 444-formatted RGB color values.
+     *
+     * The format for two neighboring pixels is as follows, where RX, GX, BX represent
+     * the color data for the pixels:
+     *
+     * Pixel: |------------- Pixel 1 -------------|------------- Pixel 2 -------------|
+     *  Data:  R3 R2 R1 R0 G3 G2 G1 G0 B3 B2 B1 B0 R3 R2 R1 R0 G3 G2 G1 G0 B3 B2 B1 B0
+     *   Bit:   7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
+     *  Byte: |------- Byte 1 --------|------- Byte 2 --------|------- Byte 3 --------|
+     */
+    static uint8_t *stage;
+
+    static void blit();
 };
 
 #endif

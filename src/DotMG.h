@@ -108,37 +108,116 @@ class DotMGBase : public DotMGCore
   static void begin();
 
   /** \brief
-   * Clear the display buffer.
+   * Clear the frame buffer to the current background.
    *
-   * \details
-   * The entire contents of the screen buffer are cleared to `COLOR_BLACK`.
-   *
-   * \see display()
+   * \see display() setBackgroundColor() backgroundColor() setBackgroundImage()
+   * backgroundImage()
    */
   static void clear();
 
   /** \brief
-   * Move the contents of the display buffer to the display.
+   * Sends the contents of the frame buffer to the display.
    *
-   * \details
-   * The contents of the display buffer in RAM are moved to the display and
-   * will appear on the screen. The buffer will then be cleared.
+   * \param clear If set to `true`, clears the frame buffer after sending.
    *
    * \see clear()
    */
-  static void display();
+  static void display(bool clear = true);
 
   /** \brief
-   * Set a single pixel in the display buffer to the specified color.
+   * Sets the background color to use when clearing the screen.
+   *
+   * \param color The background color.
+   *
+   * \details
+   * The background color will be used when clearing the screen via `clear()`
+   * or `display()`. It can be used in combination with a background image, which
+   * is useful if the image has transparency. The background color will be applied
+   * behind the background image.
+   *
+   * \see backgroundColor() setBackgroundImage() backgroundImage() backgroundImageWidth()
+   * backgroundImageHeight() clear() display()
+   */
+  static void setBackgroundColor(Color color);
+
+  /** \brief
+   * Get the current background color.
+   *
+   * \return The current background color. Returns `COLOR_BLACK` if none is set.
+   *
+   * \see setBackgroundColor() setBackgroundImage() backgroundImage() backgroundImageWidth()
+   * backgroundImageHeight() clear() display()
+   */
+  static Color backgroundColor();
+
+  /** \brief
+   * Sets the background image to use when clearing the screen.
+   *
+   * \param image The background image. Set to `NULL` to remove.
+   * \param width The background image width.
+   * \param width The background image height.
+   *
+   * \details
+   * To save RAM, it is recommended to only set the background image to a constant
+   * array, which will reside in program memory.
+   *
+   * The image should be formatted similarly to `frameBuffer()`. If it is smaller
+   * than the screen in either width or height, it will be repeated to fill any
+   * remaining space. If it is larger, it will be cropped to the screen boundaries.
+   *
+   * The background image will be used when clearing the screen via `clear()`
+   * or `display()`. It can be used in combination with a background color, which
+   * is useful if the image has transparency. The background color will be applied
+   * behind the background image.
+   *
+   * \see backgroundImage() backgroundImageWidth() backgroundImageHeight()
+   * setBackgroundColor() backgroundColor() clear() display()
+   */
+  static void setBackgroundImage(Color color[], uint16_t width, uint16_t height);
+
+  /** \brief
+   * Get the current background image.
+   *
+   * \return A pointer to the current background image. Returns `NULL` if none is set.
+   *
+   * \see backgroundImageWidth() backgroundImageHeight() setBackgroundImage()
+   * setBackgroundColor() backgroundColor() clear() display()
+   */
+  static Color* backgroundImage();
+
+    /** \brief
+   * Get the current background image width.
+   *
+   * \return The current background image width. Returns zero if none is set.
+   *
+   * \see backgroundImage() backgroundImageHeight() setBackgroundImage()
+   * setBackgroundColor() backgroundColor() clear() display()
+   */
+  static uint16_t backgroundImageWidth();
+
+  /** \brief
+   * Get the current background image height.
+   *
+   * \return The current background image height. Returns zero if none is set.
+   *
+   * \see backgroundImage() backgroundImageWidth() setBackgroundImage()
+   * setBackgroundColor() backgroundColor() clear() display()
+   */
+  static uint16_t backgroundImageHeight();
+
+  /** \brief
+   * Set a single pixel in the frame buffer to the specified color.
    *
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see getPixel()
    */
   static void drawPixel(int16_t x, int16_t y, Color color = COLOR_WHITE);
 
   /** \brief
-   * Returns the color of the given pixel in the screen buffer.
+   * Return the color of the given pixel in the frame buffer.
    *
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
@@ -150,6 +229,8 @@ class DotMGBase : public DotMGCore
    * during a `draw*()` function.
    *
    * If the given coordinate is not on the screen, `COLOR_CLEAR` will be returned.
+   *
+   * \see drawPixel()
    */
   static Color getPixel(int16_t x, int16_t y);
 
@@ -160,6 +241,8 @@ class DotMGBase : public DotMGCore
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see fillCircle()
    */
   static void drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE);
 
@@ -170,6 +253,8 @@ class DotMGBase : public DotMGCore
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see drawCircle()
    */
   static void fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE);
 
@@ -183,6 +268,8 @@ class DotMGBase : public DotMGCore
    * \details
    * Draw a line from the start point to the end point using Bresenham's algorithm.
    * The start and end points can be at any location with respect to the other.
+   *
+   * \see drawFastVLine() drawFastHLine()
    */
   static void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color = COLOR_WHITE);
 
@@ -194,6 +281,8 @@ class DotMGBase : public DotMGCore
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see fillRect() drawRoundRect() fillRoundRect()
    */
   static void drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE);
 
@@ -204,6 +293,8 @@ class DotMGBase : public DotMGCore
    * \param y The Y coordinate of the upper start point.
    * \param h The height of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see drawLine() drawFastHLine()
    */
   static void drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color = COLOR_WHITE);
 
@@ -214,6 +305,8 @@ class DotMGBase : public DotMGCore
    * \param y The Y coordinate of the left start point.
    * \param w The width of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see drawLine() drawFastVLine()
    */
   static void drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color = COLOR_WHITE);
 
@@ -225,6 +318,8 @@ class DotMGBase : public DotMGCore
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see drawRect() drawRoundRect() fillRoundRect()
    */
   static void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE);
 
@@ -244,6 +339,8 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see fillRoundRect() drawRect() fillRect()
    */
   static void drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE);
 
@@ -256,6 +353,8 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
+   *
+   * \see drawRoundRect() drawRect() fillRect()
    */
   static void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE);
 
@@ -269,6 +368,8 @@ class DotMGBase : public DotMGCore
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to each other.
+   *
+   * \see fillTriangle()
    */
   static void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE);
 
@@ -282,6 +383,8 @@ class DotMGBase : public DotMGCore
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to each other.
+   *
+   * \see drawTriangle()
    */
   static void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE);
 
@@ -300,31 +403,17 @@ class DotMGBase : public DotMGCore
    * The input array must be located in program memory by declaring it as
    * a `const`.
    */
-  static void drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint16_t w, uint16_t h);
+  static void drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t w, uint16_t h);
 
   /** \brief
-   * Get a pointer to the display buffer in RAM.
-   *
-   * \return A pointer to the display buffer array in RAM.
+   * Get a pointer to the current frame buffer in RAM.
    *
    * \details
-   * The location of the display buffer in RAM, which is displayed using
-   * `display()`, can be gotten using this function. The buffer can then be
-   * read and directly manipulated.
-   *
-   * Every three bytes in the array specifies a horizontal row of two pixels, with the
-   * most significant bit at the left end of the row. Pixels are 12-bit 444-formatted
-   * RGB color values.
-   *
-   * The format for two neighboring pixels is as follows, where RX, GX, BX represent
-   * the color data for the pixels:
-   *
-   * Pixel: |------------- Pixel 1 -------------|------------- Pixel 2 -------------|
-   *  Data:  R3 R2 R1 R0 G3 G2 G1 G0 B3 B2 B1 B0 R3 R2 R1 R0 G3 G2 G1 G0 B3 B2 B1 B0
-   *   Bit:   7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
-   *  Byte: |------- Byte 1 --------|------- Byte 2 --------|------- Byte 3 --------|
+   * The returned buffer is a `Color` array of length `WIDTH * HEIGHT`. Every span of
+   * `WIDTH` pixels represents a row on the display, where the leftmost span represents
+   * the top row.
    */
-  static uint8_t* frameBuffer();
+  static Color* frameBuffer();
 
   /** \brief
    * Create a seed suitable for use with a random number generator.
@@ -386,7 +475,8 @@ class DotMGBase : public DotMGCore
    * have elapsed between events but the possibility of the counter wrapping
    * would have to be accounted for.
    *
-   * \see nextFrame() everyXFrames()
+   * \see setFrameRate() setFrameDuration() nextFrame() everyXFrames()
+   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static uint16_t frameCount();
 
@@ -414,7 +504,8 @@ class DotMGBase : public DotMGCore
    * to 16ms, giving an actual frame rate of 62.5 FPS.
    * \endparblock
    *
-   * \see nextFrame() setFrameDuration()
+   * \see frameCount() setFrameDuration() nextFrame() everyXFrames()
+   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static void setFrameRate(uint8_t rate);
 
@@ -434,7 +525,8 @@ class DotMGBase : public DotMGCore
    * start of the game, but it can be changed at any time to alter the frame
    * update rate.
    *
-   * \see nextFrame() setFrameRate()
+   * \see frameCount() setFrameRate() nextFrame() everyXFrames()
+   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static void setFrameDuration(uint16_t duration);
 
@@ -461,7 +553,8 @@ class DotMGBase : public DotMGCore
    * }
    * \endcode
    *
-   * \see setFrameRate() setFrameDuration()
+   * \see frameCount() setFrameRate() setFrameDuration() everyXFrames()
+   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static bool nextFrame();
 
@@ -488,9 +581,26 @@ class DotMGBase : public DotMGCore
    * }
    * \endcode
    *
-   * \see setFrameRate() nextFrame()
+   * \see frameCount() setFrameRate() setFrameDuration() nextFrame()
+   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static bool everyXFrames(uint16_t frames);
+
+  /** \brief
+   * Returns the most recent frame rate.
+   *
+   * \see frameCount() setFrameRate() setFrameDuration() nextFrame() everyXFrames()
+   * actualFrameDurationMs() cpuLoad()
+   */
+  static uint8_t actualFrameRate();
+
+  /** \brief
+   * Returns the most recent frame duration in milliseconds.
+   *
+   * \see frameCount() setFrameRate() setFrameDuration() nextFrame() everyXFrames()
+   * actualFrameRate() cpuLoad()
+   */
+  static uint16_t actualFrameDurationMs();
 
   /** \brief
    * Return the load on the CPU as a percentage.
@@ -511,13 +621,10 @@ class DotMGBase : public DotMGCore
    * that the frame rate should be made slower or the frame processing code
    * should be optimized to run faster.
    *
-   * \see setFrameRate() nextFrame()
+   * \see frameCount() setFrameRate() setFrameDuration() nextFrame() everyXFrames()
+   * actualFrameRate() actualFrameDurationMs()
    */
   static int cpuLoad();
-
-  // TODO: document these
-  static uint8_t actualFrameRate();
-  static uint16_t actualFrameDurationMs();
 
   /** \brief
    * Test if the specified buttons are pressed.
@@ -535,6 +642,8 @@ class DotMGBase : public DotMGCore
    *
    * \note
    * This function does not perform any button debouncing.
+   *
+   * \see notPressed() pollButtons() justPressed() justReleased()
    */
   static bool pressed(uint8_t buttons);
 
@@ -555,6 +664,8 @@ class DotMGBase : public DotMGCore
    *
    * \note
    * This function does not perform any button debouncing.
+   *
+   * \see pressed() pollButtons() justPressed() justReleased()
    */
   static bool notPressed(uint8_t buttons);
 
@@ -589,7 +700,7 @@ class DotMGBase : public DotMGCore
    * a frame rate of 60 or lower (or possibly somewhat higher), should be
    * sufficient.
    *
-   * \see justPressed() justReleased()
+   * \see justPressed() justReleased() pressed() notPressed()
    */
   static void pollButtons();
 
@@ -611,7 +722,7 @@ class DotMGBase : public DotMGCore
    *
    * This function should only be used to test a single button.
    *
-   * \see pollButtons() justReleased()
+   * \see justReleased() pollButtons() pressed() notPressed()
    */
   static bool justPressed(uint8_t button);
 
@@ -639,7 +750,7 @@ class DotMGBase : public DotMGCore
    * know if a button has been released, without knowing when it was pressed,
    * is uncommon.
    *
-   * \see pollButtons() justPressed()
+   * \see justPressed() pollButtons() pressed() notPressed()
    */
   static bool justReleased(uint8_t button);
 

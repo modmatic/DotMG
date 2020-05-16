@@ -32,15 +32,17 @@ Point::Point(int16_t x, int16_t y)
 static uint8_t currentButtonState;
 static uint8_t previousButtonState;
 
-static uint8_t buf1[frameBufLen];
-static uint8_t buf2[frameBufLen];
-static uint8_t *frameBuf = buf1;
-static uint8_t *frameBuf2 = buf2;
+static Color frameBuf[WIDTH*HEIGHT];
 static uint16_t currFrame;
 static uint16_t eachFrameMillis = 16;
 static uint16_t thisFrameStart;
 static bool justRendered;
 static uint16_t lastFrameDurationMs;
+
+static Color bgColor = COLOR_BLACK;
+static Color *bgImage;
+static uint16_t bgImageWidth;
+static uint16_t bgImageHeight;
 
 // Draw one or more "corners" of a circle.
 static void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color = COLOR_WHITE);
@@ -60,29 +62,95 @@ void DotMGBase::begin()
 
 void DotMGBase::clear()
 {
-  memset(frameBuf, 0, frameBufLen);
+  // TODO: support background images
+  uint16_t wh = WIDTH * HEIGHT;
+  for (int i = 0; i < wh; i++)
+  {
+    frameBuf[i] = bgColor;
+  }
 }
 
-void DotMGBase::display()
+void DotMGBase::display(bool clear)
 {
-  // Draw current frame buffer
-  paintScreen(frameBuf);
+  // Translate image to display stage
+  int wh = WIDTH * HEIGHT;
+  for (int yw = 0; yw < wh; yw += WIDTH)
+  {
+    for (int x = 0; x < WIDTH; x++)
+    {
+      int i_src = yw + x;
+      int i_dst = (i_src * 3) >> 1;
+      uint16_t c = frameBuf[i_src] >> 4;  // Ignore alpha
 
-  // Swap in and prepare next frame buffer
-  uint8_t *tmp = frameBuf;
-  frameBuf = frameBuf2;
-  frameBuf2 = tmp;
-  clear();
+      if (clear)
+        frameBuf[i_src] = bgColor;  // TODO: background image
+
+      if (x & 0x1) // x odd
+      {
+        stage[i_dst] = (stage[i_dst] & 0xF0) | (c >> 8);  // R channel
+        stage[i_dst+1] = c & 0xFF;  // G, B channels
+      }
+      else  // x even
+      {
+        stage[i_dst] = c >> 4;  // R, G channels
+        stage[i_dst+1] = ((c & 0xF) << 4) | (stage[i_dst+1] & 0xF);  // B channel
+      }
+    }
+  }
+
+  blit();
 }
 
-static uint16_t blend(Color c1, Color c2)
+void DotMGBase::setBackgroundColor(Color color)
 {
-  uint8_t a0 = c1.a;
-  uint8_t a1 = 0xF - c1.a;
-  uint8_t r = (c1.r * a0 + c2.r * a1)/0xF;
-  uint8_t g = (c1.g * a0 + c2.g * a1)/0xF;
-  uint8_t b = (c1.b * a0 + c2.b * a1)/0xF;
-  return r << 8 | g << 4 | b;
+  bgColor = color;
+}
+
+Color DotMGBase::backgroundColor()
+{
+  return bgColor;
+}
+
+void DotMGBase::setBackgroundImage(Color image[], uint16_t width, uint16_t height)
+{
+  bgImage = image;
+  bgImageWidth = width;
+  bgImageHeight = height;
+}
+
+Color* DotMGBase::backgroundImage()
+{
+  return bgImage;
+}
+
+uint16_t DotMGBase::backgroundImageWidth()
+{
+  return bgImageWidth;
+}
+
+uint16_t DotMGBase::backgroundImageHeight()
+{
+  return bgImageHeight;
+}
+
+static Color blend(Color color, uint16_t x, uint16_t y)
+{
+  uint8_t a0 = color.a;
+
+  if (a0 == 0xF)
+    return color;
+
+  Color c2 = DotMGBase::getPixel(x, y);
+
+  if (a0 == 0)
+    return c2;
+
+  uint8_t a1 = 0xF - color.a;
+  return Color(
+    (color.r * a0 + c2.r * a1)/0xF,
+    (color.g * a0 + c2.g * a1)/0xF,
+    (color.b * a0 + c2.b * a1)/0xF
+  );
 }
 
 void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
@@ -90,19 +158,7 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
   if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
     return;
 
-  uint16_t c = blend(color, getPixel(x, y));
-  int i = ((x + y*WIDTH)*3) >> 1;
-
-  if (x & 0x1) // x odd
-  {
-    frameBuf[i] = (frameBuf[i] & 0xF0) | (c >> 8);  // R channel
-    frameBuf[i+1] = c & 0xFF;  // G, B channels
-  }
-  else  // x even
-  {
-    frameBuf[i] = c >> 4;  // R, G channels
-    frameBuf[i+1] = ((c & 0xF) << 4) | (frameBuf[i+1] & 0xF);  // B channel
-  }
+  frameBuf[y*WIDTH + x] = blend(color, x, y);
 }
 
 Color DotMGBase::getPixel(int16_t x, int16_t y)
@@ -110,17 +166,7 @@ Color DotMGBase::getPixel(int16_t x, int16_t y)
   if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
     return COLOR_CLEAR;
 
-  int i = ((x + y*WIDTH)*3) >> 1;
-  if (x & 0x1) // x odd
-  {
-    //              R channel                G, B channels      alpha
-    return ((frameBuf[i] & 0xF) << 12) | (frameBuf[i+1] << 4) | 0xF;
-  }
-  else  // x even
-  {
-    //        R, G channels               B channel      alpha
-    return (frameBuf[i] << 8) | (frameBuf[i+1] & 0xF0) | 0xF;
-  }
+  return frameBuf[y*WIDTH + x];
 }
 
 void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color)
@@ -491,7 +537,7 @@ void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int
   }
 }
 
-void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint16_t w, uint16_t h)
+void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t w, uint16_t h)
 {
   if (x+w < 0 || x >= WIDTH || y+h < 0 || y >= HEIGHT)
     return;
@@ -505,7 +551,7 @@ void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color *bitmap, uint16_t w
   }
 }
 
-uint8_t* DotMGBase::frameBuffer()
+Color* DotMGBase::frameBuffer()
 {
   return frameBuf;
 }
