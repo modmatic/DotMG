@@ -60,21 +60,51 @@ void DotMGBase::begin()
 
 /* Graphics */
 
+static Color blend(Color color, Color bg)
+{
+  uint8_t a0 = color.a;
+
+  if (a0 == 0xF)
+    return color;
+
+  if (a0 == 0)
+    return bg;
+
+  uint8_t a1 = 0xF - color.a;
+  return Color(
+    (color.r * a0 + bg.r * a1)/0xF,
+    (color.g * a0 + bg.g * a1)/0xF,
+    (color.b * a0 + bg.b * a1)/0xF
+  );
+}
+
+static Color blendBg(uint16_t x, uint16_t y)
+{
+  if (bgImage == NULL)
+    return bgColor;
+
+  uint16_t imgX = x % bgImageWidth;
+  uint16_t imgY = y % bgImageHeight;
+
+  return blend(bgImage[imgY*bgImageWidth + imgX], bgColor);
+}
+
 void DotMGBase::clear()
 {
-  // TODO: support background images
-  uint16_t wh = WIDTH * HEIGHT;
-  for (int i = 0; i < wh; i++)
+  for (int y = 0; y < HEIGHT; y++)
   {
-    frameBuf[i] = bgColor;
+    uint16_t yw = y*WIDTH;
+    for (int x = 0; x < WIDTH; x++)
+    {
+      frameBuf[yw + x] = blendBg(x, y);
+    }
   }
 }
 
 void DotMGBase::display(bool clear)
 {
   // Translate image to display stage
-  int wh = WIDTH * HEIGHT;
-  for (int yw = 0; yw < wh; yw += WIDTH)
+  for (int y = 0, yw = 0; y < HEIGHT; y++, yw += WIDTH)
   {
     for (int x = 0; x < WIDTH; x++)
     {
@@ -83,7 +113,7 @@ void DotMGBase::display(bool clear)
       uint16_t c = frameBuf[i_src] >> 4;  // Ignore alpha
 
       if (clear)
-        frameBuf[i_src] = bgColor;  // TODO: background image
+        frameBuf[i_src] = blendBg(x, y);
 
       if (x & 0x1) // x odd
       {
@@ -111,11 +141,21 @@ Color DotMGBase::backgroundColor()
   return bgColor;
 }
 
-void DotMGBase::setBackgroundImage(Color image[], uint16_t width, uint16_t height)
+void DotMGBase::setBackgroundImage(const Color image[], uint16_t width, uint16_t height)
 {
-  bgImage = image;
-  bgImageWidth = width;
-  bgImageHeight = height;
+  bgImage = (Color *)image;
+
+  if (bgImage != NULL)
+  {
+    bgImageWidth = width;
+    bgImageHeight = height;
+  }
+  else
+  {
+    bgImageWidth = 0;
+    bgImageHeight = 0;
+
+  }
 }
 
 Color* DotMGBase::backgroundImage()

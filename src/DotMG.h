@@ -151,7 +151,7 @@ class DotMGBase : public DotMGCore
   static Color backgroundColor();
 
   /** \brief
-   * Sets the background image to use when clearing the screen.
+   * Sets the background image from RAM to use when clearing the screen.
    *
    * \param image The background image. Set to `NULL` to remove.
    * \param width The background image width.
@@ -173,7 +173,7 @@ class DotMGBase : public DotMGCore
    * \see backgroundImage() backgroundImageWidth() backgroundImageHeight()
    * setBackgroundColor() backgroundColor() clear() display()
    */
-  static void setBackgroundImage(Color color[], uint16_t width, uint16_t height);
+  static void setBackgroundImage(const Color color[], uint16_t width, uint16_t height);
 
   /** \brief
    * Get the current background image.
