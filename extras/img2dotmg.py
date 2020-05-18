@@ -50,5 +50,6 @@ else: # .cpp
         fh.write('#define '+ name.upper() + '_H\n\n')
         fh.write('const uint16_t ' + name + 'Width = ' + str(img.width) + ';\n')
         fh.write('const uint16_t ' + name + 'Height = ' + str(img.height) + ';\n')
-        fh.write('const uint16_t ' + name + '[] = {\n' + format_data_string(data, img.width) + '\n};\n')
+        fh.write('const uint16_t ' + name + 'Data[] = {\n' + format_data_string(data, img.width) + '\n};\n')
+        fh.write('const Color *' + name + ' = (Color *)' + name + 'Data;\n')
         fh.write('\n#endif // '+ name.upper() + '_H\n')

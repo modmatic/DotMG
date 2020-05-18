@@ -22,7 +22,7 @@ bool filled = true;
 void setup() {
   // while (!Serial);
   dmg.setBackgroundColor(COLOR_MAGENTA);
-  dmg.setBackgroundImage((Color *)space, spaceWidth, spaceHeight);
+  dmg.setBackgroundImage(space, spaceWidth, spaceHeight);
   dmg.setFrameRate(60);
   dmg.begin();
 
