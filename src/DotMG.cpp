@@ -62,7 +62,7 @@ void DotMGBase::begin()
 
 static Color blend(Color color, Color bg)
 {
-  uint8_t a0 = color.a;
+  uint8_t a0 = color.a();
 
   if (a0 == 0xF)
     return color;
@@ -70,11 +70,11 @@ static Color blend(Color color, Color bg)
   if (a0 == 0)
     return bg;
 
-  uint8_t a1 = 0xF - color.a;
+  uint8_t a1 = 0xF - color.a();
   return Color(
-    (color.r * a0 + bg.r * a1)/0xF,
-    (color.g * a0 + bg.g * a1)/0xF,
-    (color.b * a0 + bg.b * a1)/0xF
+    (color.r() * a0 + bg.r() * a1)/0xF,
+    (color.g() * a0 + bg.g() * a1)/0xF,
+    (color.b() * a0 + bg.b() * a1)/0xF
   );
 }
 
@@ -175,7 +175,7 @@ uint16_t DotMGBase::backgroundImageHeight()
 
 static Color blend(Color color, uint16_t x, uint16_t y)
 {
-  uint8_t a0 = color.a;
+  uint8_t a0 = color.a();
 
   if (a0 == 0xF)
     return color;
@@ -185,11 +185,11 @@ static Color blend(Color color, uint16_t x, uint16_t y)
   if (a0 == 0)
     return c2;
 
-  uint8_t a1 = 0xF - color.a;
+  uint8_t a1 = 0xF - color.a();
   return Color(
-    (color.r * a0 + c2.r * a1)/0xF,
-    (color.g * a0 + c2.g * a1)/0xF,
-    (color.b * a0 + c2.b * a1)/0xF
+    (color.r() * a0 + c2.r() * a1)/0xF,
+    (color.g() * a0 + c2.g() * a1)/0xF,
+    (color.b() * a0 + c2.b() * a1)/0xF
   );
 }
 
@@ -637,7 +637,8 @@ bool DotMGBase::nextFrame()
     justRendered = false;
     return false;
   }
-  else if (frameDurationMs < eachFrameMillis) {
+  else if (frameDurationMs < eachFrameMillis)
+  {
     return false;
   }
 

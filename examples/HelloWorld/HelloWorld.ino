@@ -1,19 +1,19 @@
 #include <DotMG.h>
+#include "space.h"
 
-
-const Color c = Color(0xF, 0x0, 0x0, 0x8);
-const Color bg[] = {
-  COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK, c, c,
-  COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK, c, c,
-  c, c, COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK,
-  c, c, COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK,
-  COLOR_BLACK, COLOR_BLACK, c, c, COLOR_GRAY, COLOR_GRAY,
-  COLOR_BLACK, COLOR_BLACK, c, c, COLOR_GRAY, COLOR_GRAY,
-};
+// const Color c = Color(0xF, 0x0, 0x0, 0x8);
+// const Color bg[] = {
+//   COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK, c, c,
+//   COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK, c, c,
+//   c, c, COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK,
+//   c, c, COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK,
+//   COLOR_BLACK, COLOR_BLACK, c, c, COLOR_GRAY, COLOR_GRAY,
+//   COLOR_BLACK, COLOR_BLACK, c, c, COLOR_GRAY, COLOR_GRAY,
+// };
 
 DotMG dmg;
 
-int speed = 20;
+int r = 20;
 // int x = WIDTH/2, y = HEIGHT/2;
 float x = WIDTH/2, y = HEIGHT/2;
 Color color = Color(0x0, 0xa, 0xf, 0xA);
@@ -21,8 +21,8 @@ bool filled = true;
 
 void setup() {
   // while (!Serial);
-  dmg.setBackgroundColor(COLOR_GRAY);
-  // dmg.setBackgroundImage(bg, 6, 6);
+  dmg.setBackgroundColor(COLOR_MAGENTA);
+  dmg.setBackgroundImage((Color *)space, spaceWidth, spaceHeight);
   dmg.setFrameRate(60);
   dmg.begin();
 
@@ -40,32 +40,32 @@ void loop() {
 
   if (dmg.pressed(UP_BUTTON) && y >= 0)
   {
-    y -= speed * dt;
+    y -= 160 * dt; //r * dt;
   }
 
   if (dmg.pressed(DOWN_BUTTON) && y < HEIGHT)
   {
-    y += speed * dt;
+    y += 160 * dt; //r * dt;
   }
 
   if (dmg.pressed(LEFT_BUTTON) && x >= 0)
   {
-    x -= speed * dt;
+    x -= 160 * dt; //r * dt;
   }
 
   if (dmg.pressed(RIGHT_BUTTON) && x < WIDTH)
   {
-    x += speed * dt;
+    x += 160 * dt; // r * dt;
   }
 
-  if (dmg.pressed(A_BUTTON) && speed < 255)
+  if (dmg.pressed(A_BUTTON) && r < 255)
   {
-    speed += 2;
+    r += 2;
   }
 
-  if (dmg.pressed(B_BUTTON) && speed > 0)
+  if (dmg.pressed(B_BUTTON) && r > 0)
   {
-    speed -= 2;
+    r -= 2;
   }
 
   if (dmg.justPressed(START_BUTTON))
@@ -75,7 +75,7 @@ void loop() {
 
   if (dmg.justPressed(SELECT_BUTTON))
   {
-    color.a = (color.a == 0xF ? 0xA : 0xF);
+    color.a((color.a() == 0xF) ? 0xA : 0xF);
   }
 
   // dmg.fillScreen(COLOR_GREEN);
@@ -84,11 +84,11 @@ void loop() {
 
   if (filled)
   {
-    dmg.fillCircle(x, y, speed/2, color);
+    dmg.fillCircle(x, y, r, color);
   }
   else
   {
-    dmg.drawCircle(x, y, speed/2, color);
+    dmg.drawCircle(x, y, r, color);
   }
 
   dmg.fillRoundRect(80, 10, 20, 40, 7, Color(0xF, 0xF, 0x0, 0x8));
@@ -104,13 +104,13 @@ void loop() {
   dmg.setTextColor(COLOR_RED);
   dmg.print(F("fps:  "));
   dmg.println(dmg.actualFrameRate());
-  // dmg.print(F("s:  "));
-  // dmg.println(dt);
+  dmg.print(F("s:  "));
+  dmg.println(dt);
   dmg.print(F("load: "));
   dmg.print(dmg.cpuLoad());
   dmg.println(F("%"));
-  dmg.print(F("v: "));
-  dmg.print(speed);
+  dmg.print(F("r: "));
+  dmg.print(r);
 
   dmg.display(true);
 }

@@ -51,7 +51,7 @@ public:
    * \param a The alpha channel value (optional; defaults to 100% opacity).
    */
   Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0x0F)
-    : r(r), g(g), b(b), a(a)
+    : value((r << 12) | (g << 8) | (b << 4) | a)
   {}
 
   /** \brief
@@ -113,19 +113,93 @@ public:
    */
   Color complement()
   {
-    return (0xFFF0 - (value & 0xFFF0)) | a;
+    return (0xFFF0 - (value & 0xFFF0)) | a();
   }
 
-  union
+  /** \brief
+   * Returns the 4-bit red component of this color.
+   */
+  uint8_t r()
   {
-    uint16_t value;
-    struct {
-      uint8_t a : 4;
-      uint8_t b : 4;
-      uint8_t g : 4;
-      uint8_t r : 4;
-    };
-  };
+    return (value & 0xF000) >> 12;
+  }
+
+  /** \brief
+   * Sets the 4-bit red component of this color.
+   *
+   * \param val The value to set. Must be a 4-bit value.
+   */
+  void r(uint8_t val)
+  {
+    uint16_t mask = 0x0F << 12;
+    value &= ~mask;
+    value |= (val << 12) & mask;
+  }
+
+  /** \brief
+   * Returns the 4-bit green component of this color.
+   */
+  uint8_t g()
+  {
+    return (value & 0x0F00) >> 8;
+  }
+
+  /** \brief
+   * Sets the 4-bit green component of this color.
+   *
+   * \param val The value to set. Must be a 4-bit value.
+   */
+  void g(uint8_t val)
+  {
+    uint16_t mask = 0x0F << 8;
+    value &= ~mask;
+    value |= (val << 8) & mask;
+  }
+
+  /** \brief
+   * Returns the 4-bit blue component of this color.
+   */
+  uint8_t b()
+  {
+    return (value & 0x00F0) >> 4;
+  }
+
+  /** \brief
+   * Sets the 4-bit blue component of this color.
+   *
+   * \param val The value to set. Must be a 4-bit value.
+   */
+  void b(uint8_t val)
+  {
+    uint16_t mask = 0x0F << 4;
+    value &= ~mask;
+    value |= (val << 4) & mask;
+  }
+
+  /** \brief
+   * Returns the 4-bit alpha component of this color.
+   */
+  uint8_t a()
+  {
+    return value & 0x000F;
+  }
+
+  /** \brief
+   * Sets the 4-bit alpha component of this color.
+   *
+   * \param val The value to set. Must be a 4-bit value.
+   */
+  void a(uint8_t val)
+  {
+    uint16_t mask = 0x0F;
+    value &= ~mask;
+    value |= val & mask;
+  }
+
+  /** \brief
+   * Raw 16-bit value of this color.
+   */
+  uint16_t value;
 };
 
 #endif
