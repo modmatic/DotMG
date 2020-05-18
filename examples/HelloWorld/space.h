@@ -1,8 +1,6 @@
 #ifndef SPACE_H
 #define SPACE_H
 
-#include "Color.h"
-
 const uint16_t spaceWidth = 160;
 const uint16_t spaceHeight = 128;
 const uint16_t space[] = {
