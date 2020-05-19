@@ -23,3 +23,8 @@ Color BLEND_ALPHA(Color a, Color b)
     (a.b() * a0 + b.b() * a1)/0xF
   );
 }
+
+Color BLEND_NONE(Color a, Color b)
+{
+  return a;
+}

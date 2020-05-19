@@ -7,6 +7,7 @@ DotMG dmg;
 float x = WIDTH/2, y = HEIGHT/2;
 float acc = 200, accX, accY, speedX, speedY;
 int mode = 0;
+bool alpha = true, invert;
 
 void setup() {
   dmg.setBackgroundColor(COLOR_RED);
@@ -14,6 +15,11 @@ void setup() {
   dmg.setFrameRate(60);
   dmg.begin();
   dmg.setTextSize(1);
+}
+
+Color blend_invert(Color a, Color b)
+{
+  return b.complement();
 }
 
 void loop() {
@@ -78,12 +84,22 @@ void loop() {
     if (y >= HEIGHT) y = HEIGHT-1;
   }
 
-  if (dmg.pressed(A_BUTTON))
+  if (dmg.justPressed(SELECT_BUTTON))
   {
-    dmg.fillCircle(x, y - shipHeight, shipWidth/2, Color(0xF, 0xF, 0xA, 0x8));
+    alpha = !alpha;
   }
 
-  dmg.drawBitmap(x - shipWidth/2, y - shipWidth/2, ship, shipWidth, shipHeight);
+  if (dmg.justPressed(START_BUTTON))
+  {
+    invert = !invert;
+  }
+
+  if (dmg.pressed(A_BUTTON))
+  {
+    dmg.fillCircle(x, y - shipHeight, shipWidth/2, Color(0xF, 0xF, 0xA, 0x8), invert ? blend_invert : BLEND_ALPHA);
+  }
+
+  dmg.drawBitmap(x - shipWidth/2, y - shipWidth/2, ship, shipWidth, shipHeight, alpha ? BLEND_ALPHA : BLEND_NONE);
 
   // Debug info
   dmg.setCursor(0, 0);

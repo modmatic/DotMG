@@ -548,7 +548,10 @@ void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t 
     uint16_t yw = yi*w;
     for (uint16_t xi = 0; xi < w; xi++)
     {
-      drawPixel(x + xi, y + yi, bitmap[yw + xi], blend);
+      Color px = bitmap[yw + xi];
+
+      if (px.a() > 0)
+        drawPixel(x + xi, y + yi, px, blend);
     }
   }
 }

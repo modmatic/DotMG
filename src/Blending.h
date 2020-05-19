@@ -26,4 +26,12 @@ typedef Color (*BlendFunc) (Color a, Color b);
  */
 Color BLEND_ALPHA(Color a, Color b);
 
+/** \brief
+ * Does not perform blending, and simply returns incoming color.
+ *
+ * \param a The incoming color at the location being blended.
+ * \param b The current color at the location being blended.
+ */
+Color BLEND_NONE(Color a, Color b);
+
 #endif

@@ -426,10 +426,8 @@ class DotMGBase : public DotMGCore
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \details
-   * Pixels are arranged in rows, from left to right.
-   *
-   * The input array must be located in program memory by declaring it as
-   * a `const`.
+   * Pixels are arranged in rows, from left to right. Pixels with a zero-valued
+   * alpha channel will not be drawn.
    */
   static void drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t w, uint16_t h, BlendFunc blend = BLEND_ALPHA);
 
