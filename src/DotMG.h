@@ -10,6 +10,8 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 #include "DotMGCore.h"
+#include "Color.h"
+#include "Blending.h"
 #include <Print.h>
 
 
@@ -156,6 +158,7 @@ class DotMGBase : public DotMGCore
    * \param image The background image. Set to `NULL` to remove.
    * \param width The background image width. Defaults to screen width.
    * \param width The background image height. Defaults to screen height.
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \details
    * To save RAM, it is recommended to only set the background image to a constant
@@ -167,21 +170,21 @@ class DotMGBase : public DotMGCore
    *
    * The background image will be used when clearing the screen via `clear()`
    * or `display()`. It can be used in combination with a background color, which
-   * is useful if the image has transparency. The background color will be applied
+   * is useful if the image must be blended. The background color will be applied
    * behind the background image.
    *
    * \see backgroundImage() backgroundImageWidth() backgroundImageHeight()
-   * setBackgroundColor() backgroundColor() clear() display()
+   * backgroundImageBlendFunc() setBackgroundColor() backgroundColor() clear() display()
    */
-  static void setBackgroundImage(const Color color[], uint16_t width = WIDTH, uint16_t height = HEIGHT);
+  static void setBackgroundImage(const Color color[], uint16_t width = WIDTH, uint16_t height = HEIGHT, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Get the current background image.
    *
    * \return A pointer to the current background image. Returns `NULL` if none is set.
    *
-   * \see backgroundImageWidth() backgroundImageHeight() setBackgroundImage()
-   * setBackgroundColor() backgroundColor() clear() display()
+   * \see backgroundImageWidth() backgroundImageHeight() backgroundImageBlendFunc()
+   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
    */
   static Color* backgroundImage();
 
@@ -190,8 +193,8 @@ class DotMGBase : public DotMGCore
    *
    * \return The current background image width. Returns zero if none is set.
    *
-   * \see backgroundImage() backgroundImageHeight() setBackgroundImage()
-   * setBackgroundColor() backgroundColor() clear() display()
+   * \see backgroundImage() backgroundImageHeight() backgroundImageBlendFunc()
+   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
    */
   static uint16_t backgroundImageWidth();
 
@@ -200,10 +203,21 @@ class DotMGBase : public DotMGCore
    *
    * \return The current background image height. Returns zero if none is set.
    *
-   * \see backgroundImage() backgroundImageWidth() setBackgroundImage()
-   * setBackgroundColor() backgroundColor() clear() display()
+   * \see backgroundImage() backgroundImageWidth() backgroundImageBlendFunc()
+   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
    */
   static uint16_t backgroundImageHeight();
+
+  /** \brief
+   * Get the current background image blending function.
+   *
+   * \return The current background image blending function. Returns `BLEND_ALPHA`
+   * if none is set.
+   *
+   * \see backgroundImage() backgroundImageWidth() backgroundImageBlendFunc()
+   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
+   */
+  static BlendFunc backgroundImageBlendFunc();
 
   /** \brief
    * Set a single pixel in the frame buffer to the specified color.
@@ -211,10 +225,11 @@ class DotMGBase : public DotMGCore
    * \param x The X coordinate of the pixel.
    * \param y The Y coordinate of the pixel.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see getPixel()
    */
-  static void drawPixel(int16_t x, int16_t y, Color color = COLOR_WHITE);
+  static void drawPixel(int16_t x, int16_t y, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Return the color of the given pixel in the frame buffer.
@@ -241,10 +256,11 @@ class DotMGBase : public DotMGCore
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see fillCircle()
    */
-  static void drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE);
+  static void drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a filled-in circle of a given radius.
@@ -253,10 +269,11 @@ class DotMGBase : public DotMGCore
    * \param y0 The Y coordinate of the circle's center.
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see drawCircle()
    */
-  static void fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE);
+  static void fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a line between two specified points.
@@ -264,6 +281,7 @@ class DotMGBase : public DotMGCore
    * \param x0,x1 The X coordinates of the line ends.
    * \param y0,y1 The Y coordinates of the line ends.
    * \param color The line's color (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \details
    * Draw a line from the start point to the end point using Bresenham's algorithm.
@@ -271,7 +289,7 @@ class DotMGBase : public DotMGCore
    *
    * \see drawFastVLine() drawFastHLine()
    */
-  static void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color = COLOR_WHITE);
+  static void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a rectangle of a specified width and height.
@@ -281,10 +299,11 @@ class DotMGBase : public DotMGCore
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see fillRect() drawRoundRect() fillRoundRect()
    */
-  static void drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE);
+  static void drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a vertical line.
@@ -293,10 +312,11 @@ class DotMGBase : public DotMGCore
    * \param y The Y coordinate of the upper start point.
    * \param h The height of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blend function to use when rendering (optional; defaults to `BLEND_ALPHA`).
    *
    * \see drawLine() drawFastHLine()
    */
-  static void drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color = COLOR_WHITE);
+  static void drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a horizontal line.
@@ -305,10 +325,11 @@ class DotMGBase : public DotMGCore
    * \param y The Y coordinate of the left start point.
    * \param w The width of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see drawLine() drawFastVLine()
    */
-  static void drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color = COLOR_WHITE);
+  static void drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a filled-in rectangle of a specified width and height.
@@ -318,17 +339,19 @@ class DotMGBase : public DotMGCore
    * \param w The width of the rectangle.
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see drawRect() drawRoundRect() fillRoundRect()
    */
-  static void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE);
+  static void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Fill the screen buffer with the specified color.
    *
    * \param color The fill color (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    */
-  static void fillScreen(Color color = COLOR_WHITE);
+  static void fillScreen(Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a rectangle with rounded corners.
@@ -339,10 +362,11 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see fillRoundRect() drawRect() fillRect()
    */
-  static void drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE);
+  static void drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a filled-in rectangle with rounded corners.
@@ -353,10 +377,11 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \see drawRoundRect() drawRect() fillRect()
    */
-  static void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE);
+  static void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a triangle given the coordinates of each corner.
@@ -364,6 +389,7 @@ class DotMGBase : public DotMGCore
    * \param x0,x1,x2 The X coordinates of the corners.
    * \param y0,y1,y2 The Y coordinates of the corners.
    * \param color The triangle's color (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
@@ -371,7 +397,7 @@ class DotMGBase : public DotMGCore
    *
    * \see fillTriangle()
    */
-  static void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE);
+  static void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a filled-in triangle given the coordinates of each corner.
@@ -379,6 +405,7 @@ class DotMGBase : public DotMGCore
    * \param x0,x1,x2 The X coordinates of the corners.
    * \param y0,y1,y2 The Y coordinates of the corners.
    * \param color The triangle's color (optional; defaults to `COLOR_WHITE`).
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
@@ -386,7 +413,7 @@ class DotMGBase : public DotMGCore
    *
    * \see drawTriangle()
    */
-  static void fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE);
+  static void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Draw a bitmap from a horizontally-oriented array in program memory.
@@ -396,6 +423,7 @@ class DotMGBase : public DotMGCore
    * \param bitmap A pointer to the bitmap array in program memory.
    * \param w The width of the bitmap in pixels.
    * \param h The height of the bitmap in pixels.
+   * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \details
    * Pixels are arranged in rows, from left to right.
@@ -403,7 +431,7 @@ class DotMGBase : public DotMGCore
    * The input array must be located in program memory by declaring it as
    * a `const`.
    */
-  static void drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t w, uint16_t h);
+  static void drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t w, uint16_t h, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Get a pointer to the current frame buffer in RAM.

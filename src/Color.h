@@ -21,6 +21,7 @@
 #define COLOR_YELLOW     0xFF0F
 #define COLOR_ORANGE     0xF40F
 
+
 /** \brief
  * Class for working with 16-bit 4444-formatted RGBA colors.
  *
@@ -111,7 +112,7 @@ public:
    * Returns the complement of this color, preserving the original alpha
    * channel.
    */
-  Color complement()
+  Color complement() const
   {
     return (0xFFF0 - (value & 0xFFF0)) | a();
   }
@@ -119,7 +120,7 @@ public:
   /** \brief
    * Returns the 4-bit red component of this color.
    */
-  uint8_t r()
+  uint8_t r() const
   {
     return (value & 0xF000) >> 12;
   }
@@ -139,7 +140,7 @@ public:
   /** \brief
    * Returns the 4-bit green component of this color.
    */
-  uint8_t g()
+  uint8_t g() const
   {
     return (value & 0x0F00) >> 8;
   }
@@ -159,7 +160,7 @@ public:
   /** \brief
    * Returns the 4-bit blue component of this color.
    */
-  uint8_t b()
+  uint8_t b() const
   {
     return (value & 0x00F0) >> 4;
   }
@@ -179,7 +180,7 @@ public:
   /** \brief
    * Returns the 4-bit alpha component of this color.
    */
-  uint8_t a()
+  uint8_t a() const
   {
     return value & 0x000F;
   }

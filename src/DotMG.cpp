@@ -43,12 +43,13 @@ static Color bgColor = COLOR_BLACK;
 static Color *bgImage;
 static uint16_t bgImageWidth;
 static uint16_t bgImageHeight;
+static BlendFunc bgImageBlend;
 
 // Draw one or more "corners" of a circle.
-static void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color = COLOR_WHITE);
+static void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
 // Draw one or both vertical halves of a filled-in circle or rounded rectangle edge.
-static void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t delta, Color color = COLOR_WHITE);
+static void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t delta, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
 static void swap(int16_t &a, int16_t &b);
 
@@ -60,24 +61,6 @@ void DotMGBase::begin()
 
 /* Graphics */
 
-static Color blend(Color color, Color bg)
-{
-  uint8_t a0 = color.a();
-
-  if (a0 == 0xF)
-    return color;
-
-  if (a0 == 0)
-    return bg;
-
-  uint8_t a1 = 0xF - color.a();
-  return Color(
-    (color.r() * a0 + bg.r() * a1)/0xF,
-    (color.g() * a0 + bg.g() * a1)/0xF,
-    (color.b() * a0 + bg.b() * a1)/0xF
-  );
-}
-
 static Color blendBg(uint16_t x, uint16_t y)
 {
   if (bgImage == NULL)
@@ -86,7 +69,7 @@ static Color blendBg(uint16_t x, uint16_t y)
   uint16_t imgX = x % bgImageWidth;
   uint16_t imgY = y % bgImageHeight;
 
-  return blend(bgImage[imgY*bgImageWidth + imgX], bgColor);
+  return bgImageBlend(bgImage[imgY*bgImageWidth + imgX], bgColor);
 }
 
 void DotMGBase::clear()
@@ -141,7 +124,7 @@ Color DotMGBase::backgroundColor()
   return bgColor;
 }
 
-void DotMGBase::setBackgroundImage(const Color image[], uint16_t width, uint16_t height)
+void DotMGBase::setBackgroundImage(const Color image[], uint16_t width, uint16_t height, BlendFunc blend)
 {
   bgImage = (Color *)image;
 
@@ -149,12 +132,13 @@ void DotMGBase::setBackgroundImage(const Color image[], uint16_t width, uint16_t
   {
     bgImageWidth = width;
     bgImageHeight = height;
+    bgImageBlend = blend;
   }
   else
   {
     bgImageWidth = 0;
     bgImageHeight = 0;
-
+    bgImageBlend = BLEND_ALPHA;
   }
 }
 
@@ -173,32 +157,17 @@ uint16_t DotMGBase::backgroundImageHeight()
   return bgImageHeight;
 }
 
-static Color blend(Color color, uint16_t x, uint16_t y)
+BlendFunc DotMGBase::backgroundImageBlendFunc()
 {
-  uint8_t a0 = color.a();
-
-  if (a0 == 0xF)
-    return color;
-
-  Color c2 = DotMGBase::getPixel(x, y);
-
-  if (a0 == 0)
-    return c2;
-
-  uint8_t a1 = 0xF - color.a();
-  return Color(
-    (color.r() * a0 + c2.r() * a1)/0xF,
-    (color.g() * a0 + c2.g() * a1)/0xF,
-    (color.b() * a0 + c2.b() * a1)/0xF
-  );
+  return bgImageBlend;
 }
 
-void DotMGBase::drawPixel(int16_t x, int16_t y, Color color)
+void DotMGBase::drawPixel(int16_t x, int16_t y, Color color, BlendFunc blend)
 {
   if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
     return;
 
-  frameBuf[y*WIDTH + x] = blend(color, x, y);
+  frameBuf[y*WIDTH + x] = blend(color, getPixel(x, y));
 }
 
 Color DotMGBase::getPixel(int16_t x, int16_t y)
@@ -209,23 +178,23 @@ Color DotMGBase::getPixel(int16_t x, int16_t y)
   return frameBuf[y*WIDTH + x];
 }
 
-void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color)
+void DotMGBase::drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color, BlendFunc blend)
 {
   if (r == 0)
   {
-    drawPixel(x0, y0, color);
+    drawPixel(x0, y0, color, blend);
     return;
   }
 
-  drawPixel(x0, y0+r, color);
-  drawPixel(x0, y0-r, color);
-  drawPixel(x0+r, y0, color);
-  drawPixel(x0-r, y0, color);
+  drawPixel(x0, y0+r, color, blend);
+  drawPixel(x0, y0-r, color, blend);
+  drawPixel(x0+r, y0, color, blend);
+  drawPixel(x0-r, y0, color, blend);
 
-  drawCircleHelper(x0, y0, r, 0xF, color);
+  drawCircleHelper(x0, y0, r, 0xF, color, blend);
 }
 
-void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color)
+void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color, BlendFunc blend)
 {
   int16_t f = -r;
   int16_t ddF_x = 1;
@@ -248,59 +217,59 @@ void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color
 
     if (corners & 0x4) // lower right
     {
-      DotMGBase::drawPixel(x0 + x, y0 + y, color);
+      DotMGBase::drawPixel(x0 + x, y0 + y, color, blend);
 
       if (x != y)
-        DotMGBase::drawPixel(x0 + y, y0 + x, color);
+        DotMGBase::drawPixel(x0 + y, y0 + x, color, blend);
     }
 
     if (corners & 0x2) // upper right
     {
-      DotMGBase::drawPixel(x0 + x, y0 - y, color);
+      DotMGBase::drawPixel(x0 + x, y0 - y, color, blend);
 
       if (x != y)
-        DotMGBase::drawPixel(x0 + y, y0 - x, color);
+        DotMGBase::drawPixel(x0 + y, y0 - x, color, blend);
     }
 
     if (corners & 0x8) // lower left
     {
-      DotMGBase::drawPixel(x0 - y, y0 + x, color);
+      DotMGBase::drawPixel(x0 - y, y0 + x, color, blend);
 
       if (x != y)
-        DotMGBase::drawPixel(x0 - x, y0 + y, color);
+        DotMGBase::drawPixel(x0 - x, y0 + y, color, blend);
     }
 
     if (corners & 0x1) // upper left
     {
-      DotMGBase::drawPixel(x0 - y, y0 - x, color);
+      DotMGBase::drawPixel(x0 - y, y0 - x, color, blend);
 
       if (x != y)
-        DotMGBase::drawPixel(x0 - x, y0 - y, color);
+        DotMGBase::drawPixel(x0 - x, y0 - y, color, blend);
     }
   }
 }
 
-void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color)
+void DotMGBase::fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color, BlendFunc blend)
 {
   if (r == 0)
   {
-    drawPixel(x0, y0, color);
+    drawPixel(x0, y0, color, blend);
     return;
   }
 
-  drawFastVLine(x0, y0-r, 2*r+1, color);
+  drawFastVLine(x0, y0-r, 2*r+1, color, blend);
 
   if (r == 1)
   {
-    drawPixel(x0-1, y0, color);
-    drawPixel(x0+1, y0, color);
+    drawPixel(x0-1, y0, color, blend);
+    drawPixel(x0+1, y0, color, blend);
     return;
   }
 
-  fillCircleHelper(x0, y0, r, 3, 0, color);
+  fillCircleHelper(x0, y0, r, 3, 0, color, blend);
 }
 
-void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t delta, Color color)
+void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t delta, Color color, BlendFunc blend)
 {
   int16_t f = -r;
   int16_t ddF_x = 1;
@@ -327,24 +296,24 @@ void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t
     if (sides & 0x1) // right side
     {
       if (lastX != 0)
-        DotMGBase::drawFastVLine(x0+lastX, y0-lastY, 2*lastY+1+delta, color);
+        DotMGBase::drawFastVLine(x0+lastX, y0-lastY, 2*lastY+1+delta, color, blend);
 
       if (lastX != lastY && y != lastY)
-        DotMGBase::drawFastVLine(x0+lastY, y0-lastX, 2*lastX+1+delta, color);
+        DotMGBase::drawFastVLine(x0+lastY, y0-lastX, 2*lastX+1+delta, color, blend);
     }
 
     if (sides & 0x2) // left side
     {
       if (lastX != 0)
-        DotMGBase::drawFastVLine(x0-lastX, y0-lastY, 2*lastY+1+delta, color);
+        DotMGBase::drawFastVLine(x0-lastX, y0-lastY, 2*lastY+1+delta, color, blend);
 
       if (lastX != lastY && y != lastY)
-        DotMGBase::drawFastVLine(x0-lastY, y0-lastX, 2*lastX+1+delta, color);
+        DotMGBase::drawFastVLine(x0-lastY, y0-lastX, 2*lastX+1+delta, color, blend);
     }
   }
 }
 
-void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color)
+void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color, BlendFunc blend)
 {
   // bresenham's algorithm - thx wikpedia
   bool steep = abs(y1 - y0) > abs(x1 - x0);
@@ -378,11 +347,11 @@ void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color c
   {
     if (steep)
     {
-      drawPixel(y0, x0, color);
+      drawPixel(y0, x0, color, blend);
     }
     else
     {
-      drawPixel(x0, y0, color);
+      drawPixel(x0, y0, color, blend);
     }
 
     err -= dy;
@@ -394,89 +363,81 @@ void DotMGBase::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color c
   }
 }
 
-void DotMGBase::drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color)
+void DotMGBase::drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color, BlendFunc blend)
 {
-  drawFastHLine(x, y, w, color);
-  drawFastHLine(x, y+h-1, w, color);
-  drawFastVLine(x, y, h, color);
-  drawFastVLine(x+w-1, y, h, color);
+  drawFastHLine(x, y, w, color, blend);
+  drawFastHLine(x, y+h-1, w, color, blend);
+  drawFastVLine(x, y, h, color, blend);
+  drawFastVLine(x+w-1, y, h, color, blend);
 }
 
-void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color)
+void DotMGBase::drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color, BlendFunc blend)
 {
   int end = y+h;
   for (int a = max(0, y); a < min(end, HEIGHT); a++)
   {
-    drawPixel(x, a, color);
+    drawPixel(x, a, color, blend);
   }
 }
 
-void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color)
+void DotMGBase::drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color, BlendFunc blend)
 {
   int end = x+w;
   for (int a = max(0, x); a < min(end, WIDTH); a++)
   {
-    drawPixel(a, y, color);
+    drawPixel(a, y, color, blend);
   }
 }
 
-void DotMGBase::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color)
+void DotMGBase::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color, BlendFunc blend)
 {
-  // stupidest version - update in subclasses if desired!
   for (int16_t i=x; i<x+w; i++)
   {
-    // drawFastVLine(i, y, h, color);
-    for (int16_t j=y; j<y+h; j++)
-    {
-      drawPixel(i, j, color);
-    }
+    drawFastVLine(i, y, h, color, blend);
   }
 }
 
-void DotMGBase::fillScreen(Color color)
+void DotMGBase::fillScreen(Color color, BlendFunc blend)
 {
-  for (uint8_t y = 0; y < HEIGHT; y++)
-  {
-    for (uint8_t x = 0; x < WIDTH; x++)
-    {
-      drawPixel(x, y, color);
-    }
-  }
+  fillRect(0, 0, WIDTH, HEIGHT, color, blend);
 }
 
-void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color)
+void DotMGBase::drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color, BlendFunc blend)
 {
   // smarter version
-  drawFastHLine(x+r, y, w-2*r, color); // Top
-  drawFastHLine(x+r, y+h-1, w-2*r, color); // Bottom
-  drawFastVLine(x, y+r, h-2*r, color); // Left
-  drawFastVLine(x+w-1, y+r, h-2*r, color); // Right
+  drawFastHLine(x+r, y, w-2*r, color, blend); // Top
+  drawFastHLine(x+r, y+h-1, w-2*r, color, blend); // Bottom
+  drawFastVLine(x, y+r, h-2*r, color, blend); // Left
+  drawFastVLine(x+w-1, y+r, h-2*r, color, blend); // Right
   // draw four corners
-  drawCircleHelper(x+r, y+r, r, 1, color);
-  drawCircleHelper(x+w-r-1, y+r, r, 2, color);
-  drawCircleHelper(x+w-r-1, y+h-r-1, r, 4, color);
-  drawCircleHelper(x+r, y+h-r-1, r, 8, color);
+  drawCircleHelper(x+r, y+r, r, 1, color, blend);
+  drawCircleHelper(x+w-r-1, y+r, r, 2, color, blend);
+  drawCircleHelper(x+w-r-1, y+h-r-1, r, 4, color, blend);
+  drawCircleHelper(x+r, y+h-r-1, r, 8, color, blend);
 }
 
-void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color)
+void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color, BlendFunc blend)
 {
   // smarter version
-  fillRect(x+r, y, w-2*r, h, color);
+  fillRect(x+r, y, w-2*r, h, color, blend);
 
   // draw four corners
-  fillCircleHelper(x+w-r-1, y+r, r, 1, h-2*r-1, color);
-  fillCircleHelper(x+r, y+r, r, 2, h-2*r-1, color);
+  fillCircleHelper(x+w-r-1, y+r, r, 1, h-2*r-1, color, blend);
+  fillCircleHelper(x+r, y+r, r, 2, h-2*r-1, color, blend);
 }
 
-void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
+void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color, BlendFunc blend)
 {
-  drawLine(x0, y0, x1, y1, color);
-  drawLine(x1, y1, x2, y2, color);
-  drawLine(x2, y2, x0, y0, color);
+  // TODO: Avoid overlap
+
+  drawLine(x0, y0, x1, y1, color, blend);
+  drawLine(x1, y1, x2, y2, color, blend);
+  drawLine(x2, y2, x0, y0, color, blend);
 }
 
-void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color)
+void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color, BlendFunc blend)
 {
+  // TODO: Avoid overlap
 
   int16_t a, b, y, last;
   // Sort coordinates by Y order (y2 >= y1 >= y0)
@@ -512,7 +473,7 @@ void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int
     {
       b = x2;
     }
-    drawFastHLine(a, y0, b-a+1, color);
+    drawFastHLine(a, y0, b-a+1, color, blend);
     return;
   }
 
@@ -553,7 +514,7 @@ void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int
       swap(a,b);
     }
 
-    drawFastHLine(a, y, b-a+1, color);
+    drawFastHLine(a, y, b-a+1, color, blend);
   }
 
   // For lower part of triangle, find scanline crossings for segments
@@ -573,20 +534,21 @@ void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int
       swap(a,b);
     }
 
-    drawFastHLine(a, y, b-a+1, color);
+    drawFastHLine(a, y, b-a+1, color, blend);
   }
 }
 
-void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t w, uint16_t h)
+void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t w, uint16_t h, BlendFunc blend)
 {
   if (x+w < 0 || x >= WIDTH || y+h < 0 || y >= HEIGHT)
     return;
 
   for (uint16_t yi = 0; yi < h; yi++)
   {
+    uint16_t yw = yi*w;
     for (uint16_t xi = 0; xi < w; xi++)
     {
-      drawPixel(x + xi, y + yi, bitmap[xi + yi*w]);
+      drawPixel(x + xi, y + yi, bitmap[yw + xi], blend);
     }
   }
 }

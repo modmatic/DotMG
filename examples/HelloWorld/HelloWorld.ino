@@ -1,33 +1,19 @@
 #include <DotMG.h>
 #include "space.h"
-
-// const Color c = Color(0xF, 0x0, 0x0, 0x8);
-// const Color bg[] = {
-//   COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK, c, c,
-//   COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK, c, c,
-//   c, c, COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK,
-//   c, c, COLOR_GRAY, COLOR_GRAY, COLOR_BLACK, COLOR_BLACK,
-//   COLOR_BLACK, COLOR_BLACK, c, c, COLOR_GRAY, COLOR_GRAY,
-//   COLOR_BLACK, COLOR_BLACK, c, c, COLOR_GRAY, COLOR_GRAY,
-// };
+#include "ship.h"
 
 DotMG dmg;
 
-int r = 20;
-// int x = WIDTH/2, y = HEIGHT/2;
 float x = WIDTH/2, y = HEIGHT/2;
-Color color = Color(0x0, 0xa, 0xf, 0xA);
-bool filled = true;
+float acc = 200, accX, accY, speedX, speedY;
+int mode = 0;
 
 void setup() {
-  // while (!Serial);
-  dmg.setBackgroundColor(COLOR_MAGENTA);
+  dmg.setBackgroundColor(COLOR_RED);
   dmg.setBackgroundImage(space, spaceWidth, spaceHeight);
   dmg.setFrameRate(60);
   dmg.begin();
-
   dmg.setTextSize(1);
-  // dmg.setTextBackground(COLOR_WHITE);
 }
 
 void loop() {
@@ -38,79 +24,83 @@ void loop() {
 
   dmg.pollButtons();
 
-  if (dmg.pressed(UP_BUTTON) && y >= 0)
+  if (dmg.pressed(LEFT_BUTTON))
   {
-    y -= 160 * dt; //r * dt;
+    accX = -acc;
   }
-
-  if (dmg.pressed(DOWN_BUTTON) && y < HEIGHT)
+  else if (dmg.pressed(RIGHT_BUTTON))
   {
-    y += 160 * dt; //r * dt;
-  }
-
-  if (dmg.pressed(LEFT_BUTTON) && x >= 0)
-  {
-    x -= 160 * dt; //r * dt;
-  }
-
-  if (dmg.pressed(RIGHT_BUTTON) && x < WIDTH)
-  {
-    x += 160 * dt; // r * dt;
-  }
-
-  if (dmg.pressed(A_BUTTON) && r < 255)
-  {
-    r += 2;
-  }
-
-  if (dmg.pressed(B_BUTTON) && r > 0)
-  {
-    r -= 2;
-  }
-
-  if (dmg.justPressed(START_BUTTON))
-  {
-    filled = !filled;
-  }
-
-  if (dmg.justPressed(SELECT_BUTTON))
-  {
-    color.a((color.a() == 0xF) ? 0xA : 0xF);
-  }
-
-  // dmg.fillScreen(COLOR_GREEN);
-
-  dmg.fillCircle(60, 60, 10, COLOR_RED);
-
-  if (filled)
-  {
-    dmg.fillCircle(x, y, r, color);
+    accX = acc;
   }
   else
   {
-    dmg.drawCircle(x, y, r, color);
+    accX = 0;
   }
 
-  dmg.fillRoundRect(80, 10, 20, 40, 7, Color(0xF, 0xF, 0x0, 0x8));
-  dmg.drawRoundRect(120, 10, 20, 40, 7, Color(0xF, 0x0, 0xF, 0x8));
 
-  // dmg.drawTriangle(10, 100, 50, 90, 30, 120, color);
+  if (dmg.pressed(UP_BUTTON))
+  {
+    accY = -acc;
+  }
+  else if (dmg.pressed(DOWN_BUTTON))
+  {
+    accY = acc;
+  }
+  else
+  {
+    accY = 0;
+  }
 
-  // dmg.fillCircle(x, y, 10, COLOR_GREEN);
-  // dmg.fillRect(x, y, 10, 10, COLOR_BLACK);
+  speedX += accX * dt;
+  speedY += accY * dt;
+
+  if (x >= 0 && x < WIDTH)
+  {
+    x += speedX * dt;
+  }
+  else
+  {
+    speedX = 0;
+    accX = 0;
+    if (x < 0) x = 0;
+    if (x >= WIDTH) x = WIDTH-1;
+  }
+
+  if (y >= 0 && y < HEIGHT)
+  {
+    y += speedY * dt;
+  }
+  else
+  {
+    speedY = 0;
+    accY = 0;
+    if (y < 0) y = 0;
+    if (y >= HEIGHT) y = HEIGHT-1;
+  }
+
+  if (dmg.pressed(A_BUTTON))
+  {
+    dmg.fillCircle(x, y - shipHeight, shipWidth/2, Color(0xF, 0xF, 0xA, 0x8));
+  }
+
+  dmg.drawBitmap(x - shipWidth/2, y - shipWidth/2, ship, shipWidth, shipHeight);
 
   // Debug info
   dmg.setCursor(0, 0);
   dmg.setTextColor(COLOR_RED);
   dmg.print(F("fps:  "));
   dmg.println(dmg.actualFrameRate());
-  dmg.print(F("s:  "));
+  dmg.print(F("spf:  "));
   dmg.println(dt);
   dmg.print(F("load: "));
   dmg.print(dmg.cpuLoad());
   dmg.println(F("%"));
-  dmg.print(F("r: "));
-  dmg.print(r);
+  dmg.print(F("vx: "));
+  dmg.println(speedX);
+  dmg.print(F("vy: "));
+  dmg.println(speedY);
+  dmg.print(F("acc: "));
+  dmg.println(acc);
 
   dmg.display(true);
 }

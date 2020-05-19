@@ -8,7 +8,6 @@
 #define DOTMG_CORE_H
 
 #include <Arduino.h>
-#include "Color.h"
 
 // ----- Helpful values/macros -----
 
