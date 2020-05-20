@@ -52,6 +52,7 @@ static void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners
 static void fillCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t sides, int16_t delta, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
 static void swap(int16_t &a, int16_t &b);
+static Color blendBg(uint16_t x, uint16_t y) __attribute__((always_inline));
 
 void DotMGBase::begin()
 {
@@ -61,7 +62,7 @@ void DotMGBase::begin()
 
 /* Graphics */
 
-static Color blendBg(uint16_t x, uint16_t y)
+Color blendBg(uint16_t x, uint16_t y)
 {
   if (bgImage == NULL)
     return bgColor;
@@ -74,9 +75,8 @@ static Color blendBg(uint16_t x, uint16_t y)
 
 void DotMGBase::clear()
 {
-  for (int y = 0; y < HEIGHT; y++)
+  for (int y = 0, yw = 0; y < HEIGHT; y++, yw += WIDTH)
   {
-    uint16_t yw = y*WIDTH;
     for (int x = 0; x < WIDTH; x++)
     {
       frameBuf[yw + x] = blendBg(x, y);
