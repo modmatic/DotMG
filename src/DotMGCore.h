@@ -159,7 +159,7 @@ class DotMGCore
      *
      * \details
      * All pixels on the screen will be written with a value of 0 to turn
-     * them off.
+     * them off. The current frame buffer will not be affected.
      */
     static void blank();
 
