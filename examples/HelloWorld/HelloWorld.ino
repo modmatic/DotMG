@@ -2,31 +2,45 @@
 #include "space.h"
 #include "ship.h"
 
+#define DEBUG 0
+
 DotMG dmg;
 
-float x = WIDTH/2, y = HEIGHT/2;
-float acc = 200, accX, accY, speedX, speedY;
-int mode = 0;
+double x = WIDTH/2, y = HEIGHT/2;
+double acc = 200, accX, accY, speedX, speedY;
+int bg = 0;
 bool alpha = true, invert;
+const Color bgs[] = {
+  COLOR_BLACK,
+  COLOR_ORANGE,
+  COLOR_YELLOW,
+  COLOR_GREEN,
+  COLOR_CYAN,
+  COLOR_BLUE,
+  COLOR_MAGENTA,
+};
 
 void setup() {
-  dmg.setBackgroundColor(COLOR_RED);
+  dmg.setBackgroundColor(bgs[bg]);
   dmg.setBackgroundImage(space, spaceWidth, spaceHeight);
   dmg.setFrameRate(60);
   dmg.begin();
   dmg.setTextSize(1);
+  dmg.setTextColor(COLOR_YELLOW);
 }
 
 Color blend_invert(Color a, Color b)
 {
-  return b.complement();
+  Color c = b.complement();
+  c.a(a.a());
+  return (alpha ? BLEND_ALPHA : BLEND_NONE)(c, b);
 }
 
 void loop() {
   if (!dmg.nextFrame())
     return;
 
-  float dt = dmg.actualFrameDurationMs() / 1000.0;
+  double dt = dmg.actualFrameDurationMs() / 1000.0;
 
   dmg.pollButtons();
 
@@ -86,24 +100,29 @@ void loop() {
 
   if (dmg.justPressed(SELECT_BUTTON))
   {
-    alpha = !alpha;
+    invert = !invert;
   }
 
   if (dmg.justPressed(START_BUTTON))
   {
-    invert = !invert;
+    alpha = !alpha;
   }
 
   if (dmg.pressed(A_BUTTON))
   {
-    dmg.fillCircle(x, y - shipHeight, shipWidth/2, Color(0xF, 0xF, 0xA, 0x8), invert ? blend_invert : BLEND_ALPHA);
+    dmg.fillCircle(x, y - shipHeight, shipWidth/2, Color(0xF, 0xF, 0xA, 0x8));
   }
 
-  dmg.drawBitmap(x - shipWidth/2, y - shipWidth/2, ship, shipWidth, shipHeight, alpha ? BLEND_ALPHA : BLEND_NONE);
+  if (dmg.justPressed(B_BUTTON))
+  {
+    bg = (bg + 1) % (sizeof(bgs)/sizeof(Color));
+    dmg.setBackgroundColor(bgs[bg]);
+  }
 
-  // Debug info
+  dmg.drawBitmap(x - shipWidth/2, y - shipWidth/2, ship, shipWidth, shipHeight, invert ? blend_invert : alpha ? BLEND_ALPHA : BLEND_NONE);
+
   dmg.setCursor(0, 0);
-  dmg.setTextColor(COLOR_RED);
+#if DEBUG
   dmg.print(F("fps:  "));
   dmg.println(dmg.actualFrameRate());
   dmg.print(F("spf:  "));
@@ -111,12 +130,11 @@ void loop() {
   dmg.print(F("load: "));
   dmg.print(dmg.cpuLoad());
   dmg.println(F("%"));
-  dmg.print(F("vx: "));
-  dmg.println(speedX);
-  dmg.print(F("vy: "));
-  dmg.println(speedY);
-  dmg.print(F("acc: "));
-  dmg.println(acc);
+#endif
+  dmg.print(F("inv:   "));
+  dmg.println(invert);
+  dmg.print(F("alpha: "));
+  dmg.println(alpha);
 
   dmg.display(true);
 }
