@@ -32,6 +32,6 @@ Color BLEND_ALPHA(Color a, Color b);
  * \param a The incoming color at the location being blended.
  * \param b The current color at the location being blended.
  */
-Color BLEND_NONE(Color a, Color b);
+Color BLEND_NONE(Color a, Color b) __attribute__((always_inline));
 
 #endif
