@@ -850,7 +850,7 @@ class DotMG : public Print, public DotMGBase
    * buffer.
    *
    * \details
-   * For an `DotMG` class object, functions provided by the Arduino `Print`
+   * For a `DotMG` class object, functions provided by the Arduino `Print`
    * class can be used to write text to the screen buffer, in the same manner
    * as the Arduino `Serial.print()`, etc., functions.
    *

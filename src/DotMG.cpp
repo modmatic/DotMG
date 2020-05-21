@@ -47,6 +47,9 @@ static uint16_t bgImageWidth;
 static uint16_t bgImageHeight;
 static BlendFunc bgImageBlend;
 
+static int16_t cursor_x;
+static int16_t cursor_y;
+
 // Draw one or more "corners" of a circle.
 static void drawCircleHelper(int16_t x0, int16_t y0, uint16_t r, uint8_t corners, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -77,6 +80,9 @@ Color blendBg(uint16_t x, uint16_t y)
 
 void DotMGBase::clear()
 {
+  cursor_x = 0;
+  cursor_y = 0;
+
   for (int y = 0, yw = 0; y < HEIGHT; y++, yw += WIDTH)
   {
     for (int x = 0; x < WIDTH; x++)
@@ -88,6 +94,12 @@ void DotMGBase::clear()
 
 void DotMGBase::display(bool clear)
 {
+  if (clear)
+  {
+    cursor_x = 0;
+    cursor_y = 0;
+  }
+
   // Translate image to display stage
   for (int y = 0, yw = 0; y < HEIGHT; y++, yw += WIDTH)
   {
@@ -451,7 +463,7 @@ void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int
   drawLine(x0, y0, x1, y1, color, blend);
   drawLine(x1, y1, x2, y2, color, blend);
   drawLine(x2, y2, x0, y0, color, blend);
-  
+
   overlapAvoid = false;
 }
 
@@ -717,8 +729,6 @@ void swap(int16_t &a, int16_t &b)
 //========== class DotMG ==========
 //====================================
 
-  static int16_t cursor_x;
-  static int16_t cursor_y;
   static Color textColor = COLOR_WHITE;
   static Color textBackground = COLOR_CLEAR;
   static uint8_t textSize = 1;
