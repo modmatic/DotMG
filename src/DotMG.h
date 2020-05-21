@@ -805,9 +805,9 @@ class DotMG : public Print, public DotMGBase
    * \param x The X coordinate, in pixels, for where to draw the character.
    * \param y The Y coordinate, in pixels, for where to draw the character.
    * \param c The ASCII value of the character to be drawn.
-   * \param color the forground color of the character.
-   * \param bg the background color of the character.
-   * \param size The size of the character to draw.
+   * \param color the forground color of the character (optional; defaults to `COLOR_WHITE`).
+   * \param bg the background color of the character (optional; defaults to `COLOR_CLEAR`).
+   * \param size The size of the character to draw (optional; defaults to 1).
    * \param textBlend The foreground blending function to use (optional; defaults to `BLEND_ALPHA`).
    * \param bgBlend The background blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
@@ -822,7 +822,7 @@ class DotMG : public Print, public DotMGBase
    * normally be used. In most cases the Arduino Print class should be used for
    * writing text.
    */
-  static void drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color bg, uint8_t size, BlendFunc textBlend = BLEND_ALPHA, BlendFunc bgBlend = BLEND_ALPHA);
+  static void drawChar(int16_t x, int16_t y, unsigned char c, Color color = COLOR_WHITE, Color bg = COLOR_CLEAR, uint8_t size = 1, BlendFunc textBlend = BLEND_ALPHA, BlendFunc bgBlend = BLEND_ALPHA);
 
   /** \brief
    * Set the location of the text cursor.
