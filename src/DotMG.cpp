@@ -33,6 +33,8 @@ static uint8_t currentButtonState;
 static uint8_t previousButtonState;
 
 static Color frameBuf[WIDTH*HEIGHT];
+static bool overlapAvoid;
+static bool *drawnPixels;
 static uint16_t currFrame;
 static uint16_t eachFrameMillis = 16;
 static uint16_t thisFrameStart;
@@ -167,7 +169,19 @@ void DotMGBase::drawPixel(int16_t x, int16_t y, Color color, BlendFunc blend)
   if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
     return;
 
-  frameBuf[y*WIDTH + x] = blend(color, getPixel(x, y));
+  int i = y*WIDTH + x;
+
+  if (overlapAvoid)
+  {
+    if (!drawnPixels[i])
+    {
+      frameBuf[i] = blend(color, getPixel(x, y));
+      drawnPixels[i] = true;
+    }
+    return;
+  }
+
+  frameBuf[i] = blend(color, getPixel(x, y));
 }
 
 Color DotMGBase::getPixel(int16_t x, int16_t y)
@@ -428,17 +442,21 @@ void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint
 
 void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color, BlendFunc blend)
 {
-  // TODO: Avoid overlap
+  // Reuse stage buffer to track drawn pixel locations while saving RAM
+  // (it always has enough room, since it's 1.5x longer than we need)
+  drawnPixels = (bool *)stage;
+  memset(drawnPixels, 0, WIDTH*HEIGHT);
+  overlapAvoid = true;
 
   drawLine(x0, y0, x1, y1, color, blend);
   drawLine(x1, y1, x2, y2, color, blend);
   drawLine(x2, y2, x0, y0, color, blend);
+  
+  overlapAvoid = false;
 }
 
 void DotMGBase::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color, BlendFunc blend)
 {
-  // TODO: Avoid overlap
-
   int16_t a, b, y, last;
   // Sort coordinates by Y order (y2 >= y1 >= y0)
   if (y0 > y1)
