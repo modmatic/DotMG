@@ -2,7 +2,7 @@
 #include "space.h"
 #include "ship.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 DotMG dmg;
 
@@ -13,9 +13,6 @@ bool alpha = true, invert;
 const Color bgs[] = {
   COLOR_BLACK,
   COLOR_ORANGE,
-  COLOR_YELLOW,
-  COLOR_GREEN,
-  COLOR_CYAN,
   COLOR_BLUE,
   COLOR_MAGENTA,
 };
@@ -26,7 +23,8 @@ void setup() {
   dmg.setFrameRate(60);
   dmg.begin();
   dmg.setTextSize(1);
-  dmg.setTextColor(COLOR_YELLOW);
+  dmg.setTextColor(COLOR_CLEAR, BLEND_NONE);
+  dmg.setTextBackground(Color(0xF, 0, 0, 0x5), BLEND_NONE);
 }
 
 Color blend_invert(Color a, Color b)
@@ -119,9 +117,13 @@ void loop() {
     dmg.setBackgroundColor(bgs[bg]);
   }
 
-  dmg.drawBitmap(x - shipWidth/2, y - shipWidth/2, ship, shipWidth, shipHeight, invert ? blend_invert : alpha ? BLEND_ALPHA : BLEND_NONE);
+  Color c = COLOR_RED;
+  c.a(0x3);
+  // dmg.drawTriangle(x, y, 10, 125, 120, 125, c);
+  dmg.fillTriangle(x, y, 10, 125, 120, 100, c);
+  // dmg.drawBitmap(x - shipWidth/2, y - shipWidth/2, ship, shipWidth, shipHeight, invert ? blend_invert : alpha ? BLEND_ALPHA : BLEND_NONE);
 
-  dmg.setCursor(0, 0);
+  // dmg.setCursor(0, 0);
 #if DEBUG
   dmg.print(F("fps:  "));
   dmg.println(dmg.actualFrameRate());

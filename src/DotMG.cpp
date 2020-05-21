@@ -580,7 +580,7 @@ void DotMGBase::drawBitmap(int16_t x, int16_t y, const Color bitmap[], uint16_t 
     {
       Color px = bitmap[yw + xi];
 
-      if (px.a() > 0)
+      if (px.a())
         drawPixel(x + xi, y + yi, px, blend);
     }
   }
@@ -731,6 +731,8 @@ void swap(int16_t &a, int16_t &b)
 
   static Color textColor = COLOR_WHITE;
   static Color textBackground = COLOR_CLEAR;
+  static BlendFunc textBlendFunc = BLEND_ALPHA;
+  static BlendFunc textBgBlendFunc = BLEND_ALPHA;
   static uint8_t textSize = 1;
   static bool textWrap;
 
@@ -760,10 +762,9 @@ size_t DotMG::write(uint8_t c)
   return 1;
 }
 
-void DotMG::drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color bg, uint8_t size)
+void DotMG::drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color bg, uint8_t size, BlendFunc textBlend, BlendFunc bgBlend)
 {
   uint8_t line;
-  bool draw_background = bg != color;
   const unsigned char* bitmap = font + c * 5;
 
   if ((x >= WIDTH) ||              // Clip right
@@ -785,11 +786,12 @@ void DotMG::drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color b
     for (uint8_t j = 0; j < 8; j++)
     {
       Color draw_color = (line & 0x1) ? color : bg;
+      BlendFunc blend = (line & 0x1) ? textBlend : bgBlend;
 
-      if (draw_color || draw_background) {
+      if (draw_color.a()) {
         for (uint8_t a = 0; a < size; a++ ) {
           for (uint8_t b = 0; b < size; b++ ) {
-            drawPixel(x + (i * size) + a, y + (j * size) + b, draw_color);
+            drawPixel(x + (i * size) + a, y + (j * size) + b, draw_color, blend);
           }
         }
       }
@@ -814,9 +816,10 @@ int16_t DotMG::getCursorY()
   return cursor_y;
 }
 
-void DotMG::setTextColor(Color color)
+void DotMG::setTextColor(Color color, BlendFunc blend)
 {
   textColor = color;
+  textBlendFunc = blend;
 }
 
 Color DotMG::getTextColor()
@@ -824,14 +827,26 @@ Color DotMG::getTextColor()
   return textColor;
 }
 
-void DotMG::setTextBackground(Color color)
+BlendFunc DotMG::getTextBlendFunc()
+{
+  return textBlendFunc;
+}
+
+void DotMG::setTextBackground(Color color, BlendFunc blend)
 {
   textBackground = color;
+  textBgBlendFunc = blend;
+
 }
 
 Color DotMG::getTextBackground()
 {
   return textBackground;
+}
+
+BlendFunc DotMG::getTextBackgroundBlendFunc()
+{
+  return textBgBlendFunc;
 }
 
 void DotMG::setTextSize(uint8_t s)

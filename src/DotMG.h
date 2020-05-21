@@ -25,9 +25,6 @@
  * \details
  * The X and Y coordinates specify the top left corner of a rectangle with the
  * given width and height.
- *
- * \see DotMGBase::collide(Point, Rect) DotMGBase::collide(Rect, Rect)
- *      Point
  */
 struct Rect
 {
@@ -61,8 +58,6 @@ struct Rect
  *
  * \details
  * The location of the point is given by X and Y coordinates.
- *
- * \see DotMGBase::collide(Point, Rect) Rect
  */
 struct Point
 {
@@ -94,8 +89,6 @@ struct Point
  * \details
  * This class in inherited by DotMG, so if text output functions are
  * required DotMG should be used instead.
- *
- * \see DotMG
  */
 class DotMGBase : public DotMGCore
 {
@@ -111,9 +104,6 @@ class DotMGBase : public DotMGCore
 
   /** \brief
    * Clear the frame buffer to the current background.
-   *
-   * \see display() setBackgroundColor() backgroundColor() setBackgroundImage()
-   * backgroundImage()
    */
   static void clear();
 
@@ -121,8 +111,6 @@ class DotMGBase : public DotMGCore
    * Sends the contents of the frame buffer to the display.
    *
    * \param clear If set to `true`, clears the frame buffer after sending.
-   *
-   * \see clear()
    */
   static void display(bool clear = true);
 
@@ -136,9 +124,6 @@ class DotMGBase : public DotMGCore
    * or `display()`. It can be used in combination with a background image, which
    * is useful if the image has transparency. The background color will be applied
    * behind the background image.
-   *
-   * \see backgroundColor() setBackgroundImage() backgroundImage() backgroundImageWidth()
-   * backgroundImageHeight() clear() display()
    */
   static void setBackgroundColor(Color color);
 
@@ -146,9 +131,6 @@ class DotMGBase : public DotMGCore
    * Get the current background color.
    *
    * \return The current background color. Returns `COLOR_BLACK` if none is set.
-   *
-   * \see setBackgroundColor() setBackgroundImage() backgroundImage() backgroundImageWidth()
-   * backgroundImageHeight() clear() display()
    */
   static Color backgroundColor();
 
@@ -172,9 +154,6 @@ class DotMGBase : public DotMGCore
    * or `display()`. It can be used in combination with a background color, which
    * is useful if the image must be blended. The background color will be applied
    * behind the background image.
-   *
-   * \see backgroundImage() backgroundImageWidth() backgroundImageHeight()
-   * backgroundImageBlendFunc() setBackgroundColor() backgroundColor() clear() display()
    */
   static void setBackgroundImage(const Color color[], uint16_t width = WIDTH, uint16_t height = HEIGHT, BlendFunc blend = BLEND_ALPHA);
 
@@ -182,9 +161,6 @@ class DotMGBase : public DotMGCore
    * Get the current background image.
    *
    * \return A pointer to the current background image. Returns `NULL` if none is set.
-   *
-   * \see backgroundImageWidth() backgroundImageHeight() backgroundImageBlendFunc()
-   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
    */
   static Color* backgroundImage();
 
@@ -192,9 +168,6 @@ class DotMGBase : public DotMGCore
    * Get the current background image width.
    *
    * \return The current background image width. Returns zero if none is set.
-   *
-   * \see backgroundImage() backgroundImageHeight() backgroundImageBlendFunc()
-   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
    */
   static uint16_t backgroundImageWidth();
 
@@ -202,9 +175,6 @@ class DotMGBase : public DotMGCore
    * Get the current background image height.
    *
    * \return The current background image height. Returns zero if none is set.
-   *
-   * \see backgroundImage() backgroundImageWidth() backgroundImageBlendFunc()
-   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
    */
   static uint16_t backgroundImageHeight();
 
@@ -213,9 +183,6 @@ class DotMGBase : public DotMGCore
    *
    * \return The current background image blending function. Returns `BLEND_ALPHA`
    * if none is set.
-   *
-   * \see backgroundImage() backgroundImageWidth() backgroundImageBlendFunc()
-   * setBackgroundImage() setBackgroundColor() backgroundColor() clear() display()
    */
   static BlendFunc backgroundImageBlendFunc();
 
@@ -226,8 +193,6 @@ class DotMGBase : public DotMGCore
    * \param y The Y coordinate of the pixel.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see getPixel()
    */
   static void drawPixel(int16_t x, int16_t y, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -244,8 +209,6 @@ class DotMGBase : public DotMGCore
    * during a `draw*()` function.
    *
    * If the given coordinate is not on the screen, `COLOR_CLEAR` will be returned.
-   *
-   * \see drawPixel()
    */
   static Color getPixel(int16_t x, int16_t y);
 
@@ -257,8 +220,6 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see fillCircle()
    */
   static void drawCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -270,8 +231,6 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the circle in pixels.
    * \param color The circle's color (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see drawCircle()
    */
   static void fillCircle(int16_t x0, int16_t y0, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -286,8 +245,6 @@ class DotMGBase : public DotMGCore
    * \details
    * Draw a line from the start point to the end point using Bresenham's algorithm.
    * The start and end points can be at any location with respect to the other.
-   *
-   * \see drawFastVLine() drawFastHLine()
    */
   static void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -300,8 +257,6 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see fillRect() drawRoundRect() fillRoundRect()
    */
   static void drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -313,8 +268,6 @@ class DotMGBase : public DotMGCore
    * \param h The height of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
    * \param blend Blend function to use when rendering (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see drawLine() drawFastHLine()
    */
   static void drawFastVLine(int16_t x, int16_t y, uint16_t h, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -326,8 +279,6 @@ class DotMGBase : public DotMGCore
    * \param w The width of the line.
    * \param color The color of the line (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see drawLine() drawFastVLine()
    */
   static void drawFastHLine(int16_t x, int16_t y, uint16_t w, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -340,8 +291,6 @@ class DotMGBase : public DotMGCore
    * \param h The height of the rectangle.
    * \param color The color of the pixel (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see drawRect() drawRoundRect() fillRoundRect()
    */
   static void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -363,8 +312,6 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see fillRoundRect() drawRect() fillRect()
    */
   static void drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -378,8 +325,6 @@ class DotMGBase : public DotMGCore
    * \param r The radius of the semicircles forming the corners.
    * \param color The color of the rectangle (optional; defaults to `COLOR_WHITE`).
    * \param blend Blending function to use (optional; defaults to `BLEND_ALPHA`).
-   *
-   * \see drawRoundRect() drawRect() fillRect()
    */
   static void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -394,8 +339,6 @@ class DotMGBase : public DotMGCore
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to each other.
-   *
-   * \see fillTriangle()
    */
   static void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -410,8 +353,6 @@ class DotMGBase : public DotMGCore
    * \details
    * A triangle is drawn by specifying each of the three corner locations.
    * The corners can be at any position with respect to each other.
-   *
-   * \see drawTriangle()
    */
   static void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color = COLOR_WHITE, BlendFunc blend = BLEND_ALPHA);
 
@@ -451,8 +392,6 @@ class DotMGBase : public DotMGCore
    *
    * This method is most effective when called after a semi-random time, such
    * as after a user hits a button to start a game or other semi-random event.
-   *
-   * \see initRandomSeed()
    */
   static unsigned long generateRandomSeed();
 
@@ -465,8 +404,6 @@ class DotMGBase : public DotMGCore
    *
    * This method is most effective when called after a semi-random time, such
    * as after a user hits a button to start a game or other semi-random event.
-   *
-   * \see generateRandomSeed()
    */
   static void initRandomSeed();
 
@@ -500,9 +437,6 @@ class DotMGBase : public DotMGCore
    * This counter could also be used to determine the number of frames that
    * have elapsed between events but the possibility of the counter wrapping
    * would have to be accounted for.
-   *
-   * \see setFrameRate() setFrameDuration() nextFrame() everyXFrames()
-   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static uint16_t frameCount();
 
@@ -529,9 +463,6 @@ class DotMGBase : public DotMGCore
    * For example, 60 FPS would be 16.67ms per frame. This will be rounded down
    * to 16ms, giving an actual frame rate of 62.5 FPS.
    * \endparblock
-   *
-   * \see frameCount() setFrameDuration() nextFrame() everyXFrames()
-   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static void setFrameRate(uint8_t rate);
 
@@ -550,9 +481,6 @@ class DotMGBase : public DotMGCore
    * Normally, the frame rate would be set to the desired value once, at the
    * start of the game, but it can be changed at any time to alter the frame
    * update rate.
-   *
-   * \see frameCount() setFrameRate() nextFrame() everyXFrames()
-   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static void setFrameDuration(uint16_t duration);
 
@@ -578,9 +506,6 @@ class DotMGBase : public DotMGCore
    *   // render and display the next frame
    * }
    * \endcode
-   *
-   * \see frameCount() setFrameRate() setFrameDuration() everyXFrames()
-   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static bool nextFrame();
 
@@ -606,25 +531,16 @@ class DotMGBase : public DotMGCore
    *   }
    * }
    * \endcode
-   *
-   * \see frameCount() setFrameRate() setFrameDuration() nextFrame()
-   * actualFrameRate() actualFrameDurationMs() cpuLoad()
    */
   static bool everyXFrames(uint16_t frames);
 
   /** \brief
    * Returns the most recent frame rate.
-   *
-   * \see frameCount() setFrameRate() setFrameDuration() nextFrame() everyXFrames()
-   * actualFrameDurationMs() cpuLoad()
    */
   static uint8_t actualFrameRate();
 
   /** \brief
    * Returns the most recent frame duration in milliseconds.
-   *
-   * \see frameCount() setFrameRate() setFrameDuration() nextFrame() everyXFrames()
-   * actualFrameRate() cpuLoad()
    */
   static uint16_t actualFrameDurationMs();
 
@@ -646,9 +562,6 @@ class DotMGBase : public DotMGCore
    * processing a frame than the time allotted per frame. This would indicate
    * that the frame rate should be made slower or the frame processing code
    * should be optimized to run faster.
-   *
-   * \see frameCount() setFrameRate() setFrameDuration() nextFrame() everyXFrames()
-   * actualFrameRate() actualFrameDurationMs()
    */
   static int cpuLoad();
 
@@ -668,8 +581,6 @@ class DotMGBase : public DotMGCore
    *
    * \note
    * This function does not perform any button debouncing.
-   *
-   * \see notPressed() pollButtons() justPressed() justReleased()
    */
   static bool pressed(uint8_t buttons);
 
@@ -690,8 +601,6 @@ class DotMGBase : public DotMGCore
    *
    * \note
    * This function does not perform any button debouncing.
-   *
-   * \see pressed() pollButtons() justPressed() justReleased()
    */
   static bool notPressed(uint8_t buttons);
 
@@ -725,8 +634,6 @@ class DotMGBase : public DotMGCore
    * enough, buttons will be naturally debounced. Calling it once per frame at
    * a frame rate of 60 or lower (or possibly somewhat higher), should be
    * sufficient.
-   *
-   * \see justPressed() justReleased() pressed() notPressed()
    */
   static void pollButtons();
 
@@ -747,8 +654,6 @@ class DotMGBase : public DotMGCore
    * been released for this function to return `true` when pressed again.
    *
    * This function should only be used to test a single button.
-   *
-   * \see justReleased() pollButtons() pressed() notPressed()
    */
   static bool justPressed(uint8_t button);
 
@@ -775,8 +680,6 @@ class DotMGBase : public DotMGCore
    * There aren't many cases where this function would be needed. Wanting to
    * know if a button has been released, without knowing when it was pressed,
    * is uncommon.
-   *
-   * \see justPressed() pollButtons() pressed() notPressed()
    */
   static bool justReleased(uint8_t button);
 
@@ -789,8 +692,6 @@ class DotMGBase : public DotMGCore
    * It won't return unless no buttons are being pressed. A short delay is
    * performed each time before testing the state of the buttons to do a
    * simple button debounce.
-   *
-   * \see begin()
    */
   static void waitNoButtons();
 
@@ -805,8 +706,6 @@ class DotMGBase : public DotMGCore
    * \details
    * This function is intended to detemine if an object, whose boundaries are
    * are defined by the given rectangle, is in contact with the given point.
-   *
-   * \see Point Rect
    */
   static bool collide(Point point, Rect rect);
 
@@ -822,8 +721,6 @@ class DotMGBase : public DotMGCore
    * This function is intended to detemine if an object, whose boundaries are
    * are defined by the given rectangle, is in contact with another rectangular
    * object.
-   *
-   * \see Rect
    */
   static bool collide(Rect rect1, Rect rect2);
 };
@@ -870,8 +767,6 @@ class DotMG : public Print, public DotMGBase
    * dmg.print('\n');   // Moves the text cursor to the start of the next line
    * dmg.print(78, HEX) // Prints "4E" (78 in hexadecimal)
    * \endcode
-   *
-   * \see DotMG::write()
    */
   using Print::write;
 
@@ -900,8 +795,6 @@ class DotMG : public Print, public DotMGBase
    * This function is rather low level and, although it's available as a public
    * function, it wouldn't normally be used. In most cases the Arduino Print
    * class should be used for writing text.
-   *
-   * \see Print setTextSize() setTextWrap()
    */
   virtual size_t write(uint8_t);
 
@@ -915,6 +808,8 @@ class DotMG : public Print, public DotMGBase
    * \param color the forground color of the character.
    * \param bg the background color of the character.
    * \param size The size of the character to draw.
+   * \param textBlend The foreground blending function to use (optional; defaults to `BLEND_ALPHA`).
+   * \param bgBlend The background blending function to use (optional; defaults to `BLEND_ALPHA`).
    *
    * \details
    * The specified ASCII character is drawn starting at the provided
@@ -926,10 +821,8 @@ class DotMG : public Print, public DotMGBase
    * character. Although it's available as a public function, it wouldn't
    * normally be used. In most cases the Arduino Print class should be used for
    * writing text.
-   *
-   * \see Print write() setTextColor() setTextBackground() setTextSize()
    */
-  static void drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color bg, uint8_t size);
+  static void drawChar(int16_t x, int16_t y, unsigned char c, Color color, Color bg, uint8_t size, BlendFunc textBlend = BLEND_ALPHA, BlendFunc bgBlend = BLEND_ALPHA);
 
   /** \brief
    * Set the location of the text cursor.
@@ -944,8 +837,6 @@ class DotMG : public Print, public DotMGBase
    * As with all drawing functions, location 0, 0 is the top left corner of
    * the display. The cursor location will be the top left corner of the next
    * character written.
-   *
-   * \see getCursorX() getCursorY()
    */
   static void setCursor(int16_t x, int16_t y);
 
@@ -957,8 +848,6 @@ class DotMG : public Print, public DotMGBase
    * \details
    * The X coordinate returned is a pixel location with 0 indicating the
    * leftmost column.
-   *
-   * \see getCursorY() setCursor()
    */
   static int16_t getCursorX();
 
@@ -970,8 +859,6 @@ class DotMG : public Print, public DotMGBase
    * \details
    * The Y coordinate returned is a pixel location with 0 indicating the
    * topmost row.
-   *
-   * \see getCursorX() setCursor()
    */
   static int16_t getCursorY();
 
@@ -979,37 +866,47 @@ class DotMG : public Print, public DotMGBase
    * Set the text foreground color.
    *
    * \param color The color to be used for following text.
-   *
-   * \see setTextBackground() getTextColor()
+   * \param blend The blending function to use (optional; defaults to `BLEND_ALPHA`).
    */
-  static void setTextColor(Color color);
+  static void setTextColor(Color color, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Get the currently set text foreground color.
    *
    * \return The color that will be used to display any following text.
-   *
-   * \see setTextColor()
    */
   static Color getTextColor();
 
   /** \brief
+   * Get the currently set text foreground blending function.
+   *
+   * \return The blending function that will be used when displaying
+   * text foreground. Returns `BLEND_ALPHA` if none set.
+   */
+  static BlendFunc getTextBlendFunc();
+
+  /** \brief
    * Set the text background color.
    *
-   * \param bg The background color to be used for following text.
-   *
-   * \see setTextColor() getTextBackground()
+   * \param color The background color to be used for following text.
+   * \param blend The blending function to use (optional; defaults to `BLEND_ALPHA`).
    */
-  static void setTextBackground(Color color);
+  static void setTextBackground(Color color, BlendFunc blend = BLEND_ALPHA);
 
   /** \brief
    * Get the currently set text background color.
    *
    * \return The background color that will be used to display any following text.
-   *
-   * \see setTextBackground()
    */
   static Color getTextBackground();
+
+  /** \brief
+   * Get the currently set text background blending function.
+   *
+   * \return The blending function that will be used when displaying
+   * text foreground. Returns `BLEND_ALPHA` if none set.
+   */
+  static BlendFunc getTextBackgroundBlendFunc();
 
   /** \brief
    * Set the text character size.
@@ -1024,8 +921,6 @@ class DotMG : public Print, public DotMGBase
    * The value specified is a multiplier. A value of 2 will double the
    * size so they will occupy 12x16 pixels. A value of 3 will result in
    * 18x24, etc.
-   *
-   * \see getTextSize()
    */
   static void setTextSize(uint8_t s);
 
@@ -1033,8 +928,6 @@ class DotMG : public Print, public DotMGBase
    * Get the currently set text size.
    *
    * \return The size that will be used for any following text.
-   *
-   * \see setTextSize()
    */
   static uint8_t getTextSize();
 
@@ -1052,8 +945,6 @@ class DotMG : public Print, public DotMGBase
    * If wrap mode is disabled, characters will continue to be written to the
    * same line. A character at the right edge of the screen may only be
    * partially displayed and additional characters will be off screen.
-   *
-   * \see getTextWrap()
    */
   static void setTextWrap(bool w);
 
@@ -1061,8 +952,6 @@ class DotMG : public Print, public DotMGBase
    * Get the currently set text wrap mode.
    *
    * \return `true` if text wrapping is on, `false` if wrapping is off.
-   *
-   * \see setTextWrap()
    */
   static bool getTextWrap();
 

@@ -188,8 +188,6 @@ class DotMGCore
      *
      * Once in vertical flip mode, it will remain this way until normal
      * vertical mode is set by calling this function with a value of `false`.
-     *
-     * \see flipHorizontal()
      */
     static void flipVertical(bool flipped);
 
@@ -206,8 +204,6 @@ class DotMGCore
      *
      * Once in horizontal flip mode, it will remain this way until normal
      * horizontal mode is set by calling this function with a value of `false`.
-     *
-     * \see flipVertical()
      */
     static void flipHorizontal(bool flipped);
 
@@ -227,8 +223,6 @@ class DotMGCore
      *
      * \note
      * All pixels will be lit even if the display is in inverted mode.
-     *
-     * \see invert()
      */
     static void allPixelsOn(bool on);
 
@@ -240,8 +234,6 @@ class DotMGCore
      * used to extend battery life when a game is paused or when a sketch
      * doesn't require anything to be displayed for a relatively long period
      * of time.
-     *
-     * \see displayOn()
      */
     static void displayOff();
 
@@ -251,8 +243,6 @@ class DotMGCore
      * \details
      * Used to power up and reinitialize the display after calling
      * `displayOff()`.
-     *
-     * \see displayOff()
      */
     static void displayOn();
 
