@@ -52,7 +52,7 @@ public:
    * \param a The alpha channel value (optional; defaults to 100% opacity).
    */
   Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0x0F)
-    : value((r << 12) | (g << 8) | (b << 4) | a)
+    : value(((r & 0xF) << 12) | ((g & 0xF) << 8) | ((b & 0xF) << 4) | (a & 0xF))
   {}
 
   /** \brief
@@ -68,6 +68,26 @@ public:
   operator uint16_t()
   {
     return value;
+  }
+
+  /** \brief
+   * Builds a 16-bit 4444-formatted RGBA color value from individual floating
+   * point RGBA channels.
+   *
+   * \param r The red channel value. Must be in the range of 0.0 to 1.0.
+   * \param g The green channel value. Must be in the range of 0.0 to 1.0.
+   * \param b The blue channel value. Must be in the range of 0.0 to 1.0.
+   * \param a The alpha channel value (optional; defaults to 100% opacity).
+   * Must be in the range of 0.0 to 1.0.
+   */
+  static Color fromFloatRGBA(float r, float g, float b, float a = 1.0f)
+  {
+    return Color(
+      r*0x0F,
+      g*0x0F,
+      b*0x0F,
+      a*0x0F
+    );
   }
 
   /** \brief
