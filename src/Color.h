@@ -138,6 +138,16 @@ public:
   }
 
   /** \brief
+   * Returns the grayscale version of this color, preserving the original
+   * alpha channel.
+   */
+  Color grayscale() const
+  {
+    uint8_t v = (0.3f*r() + 0.59f*g() + 0.11f*b());
+    return Color(v, v, v, a());
+  }
+
+  /** \brief
    * Returns the 4-bit red component of this color.
    */
   uint8_t r() const

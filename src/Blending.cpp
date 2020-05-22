@@ -6,6 +6,11 @@
 
 #include "Blending.h"
 
+Color BLEND_NONE(Color a, Color b)
+{
+  return a;
+}
+
 Color BLEND_ALPHA(Color a, Color b)
 {
   uint8_t a0 = a.a();
@@ -24,7 +29,7 @@ Color BLEND_ALPHA(Color a, Color b)
   );
 }
 
-Color BLEND_NONE(Color a, Color b)
+Color BLEND_ALPHA_GRAY(Color a, Color b)
 {
-  return a;
+  return BLEND_ALPHA(a, b).grayscale();
 }

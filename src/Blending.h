@@ -19,6 +19,14 @@
 typedef Color (*BlendFunc) (Color a, Color b);
 
 /** \brief
+ * Does not perform blending, and simply returns incoming color.
+ *
+ * \param a The incoming color at the location being blended.
+ * \param b The current color at the location being blended.
+ */
+Color BLEND_NONE(Color a, Color b) __attribute__((always_inline));
+
+/** \brief
  * Performs standard alpha blending.
  *
  * \param a The incoming color at the location being blended.
@@ -27,11 +35,12 @@ typedef Color (*BlendFunc) (Color a, Color b);
 Color BLEND_ALPHA(Color a, Color b);
 
 /** \brief
- * Does not perform blending, and simply returns incoming color.
+ * Performs standard alpha blending, then converts the result
+ * to grayscale.
  *
  * \param a The incoming color at the location being blended.
  * \param b The current color at the location being blended.
  */
-Color BLEND_NONE(Color a, Color b) __attribute__((always_inline));
+Color BLEND_ALPHA_GRAY(Color a, Color b);
 
 #endif
