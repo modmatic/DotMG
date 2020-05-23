@@ -106,6 +106,24 @@ void DotMGBase::display(bool clear)
     for (int x = 0; x < WIDTH; x++)
     {
       int i_src = yw + x;
+
+#ifdef DOTMG_PIXEL_SIZE_2X
+      int i_dst = 3*i_src + 3*yw;  // 2*3*yw + 3*x
+      uint16_t c = frameBuf[i_src] >> 4;  // Ignore alpha
+
+      if (clear)
+        frameBuf[i_src] = blendBg(x, y);
+
+      // Add two adjacent 12-bit pixels of the same color
+      stage[i_dst+0] = c >> 4;  // R, G channels
+      stage[i_dst+1] = ((c & 0xF) << 4) | (c >> 8);  // B channel | R channel
+      stage[i_dst+2] = c & 0xFF;  // G, B channels
+
+      // Add same two pixels on next row
+      stage[i_dst+0 + 3*WIDTH] = stage[i_dst+0];
+      stage[i_dst+1 + 3*WIDTH] = stage[i_dst+1];
+      stage[i_dst+2 + 3*WIDTH] = stage[i_dst+2];
+#else
       int i_dst = (i_src * 3) >> 1;
       uint16_t c = frameBuf[i_src] >> 4;  // Ignore alpha
 
@@ -114,14 +132,15 @@ void DotMGBase::display(bool clear)
 
       if (x & 0x1) // x odd
       {
-        stage[i_dst] = (stage[i_dst] & 0xF0) | (c >> 8);  // R channel
+        stage[i_dst+0] = (stage[i_dst] & 0xF0) | (c >> 8);  // R channel
         stage[i_dst+1] = c & 0xFF;  // G, B channels
       }
       else  // x even
       {
-        stage[i_dst] = c >> 4;  // R, G channels
+        stage[i_dst+0] = c >> 4;  // R, G channels
         stage[i_dst+1] = ((c & 0xF) << 4) | (stage[i_dst+1] & 0xF);  // B channel
       }
+#endif
     }
   }
 
@@ -455,7 +474,7 @@ void DotMGBase::fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint
 void DotMGBase::drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, Color color, BlendFunc blend)
 {
   // Reuse stage buffer to track drawn pixel locations while saving RAM
-  // (it always has enough room, since it's 1.5x longer than we need)
+  // (it always has enough room, since it's at least 1.5x longer than we need)
   drawnPixels = (bool *)stage;
   memset(drawnPixels, 0, WIDTH*HEIGHT);
   overlapAvoid = true;

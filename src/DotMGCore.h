@@ -39,8 +39,16 @@
 
 // Display values
 
-#define WIDTH       160
-#define HEIGHT      128
+#define DISP_WIDTH  160
+#define DISP_HEIGHT 128
+
+#ifdef DOTMG_PIXEL_SIZE_2X
+  #define WIDTH       80
+  #define HEIGHT      64
+#else
+  #define WIDTH       160
+  #define HEIGHT      128
+#endif
 
 // ----- Pins -----
 

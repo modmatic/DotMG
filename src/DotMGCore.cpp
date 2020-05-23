@@ -10,7 +10,7 @@
 static uint8_t MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
 static bool inverted = false;
 
-static const uint16_t stageLen = WIDTH*HEIGHT*12/8; // 12 bits/px, 8 bits/byte
+static const uint16_t stageLen = DISP_WIDTH*DISP_HEIGHT*12/8; // 12 bits/px, 8 bits/byte
 static uint8_t buf1[stageLen];
 static uint8_t buf2[stageLen];
 uint8_t *DotMGCore::stage = buf1;
@@ -266,14 +266,14 @@ static void setWriteRegion()
   dispSPI.transfer(0);
   dispSPI.transfer(0);
   dispSPI.transfer(0);
-  dispSPI.transfer(WIDTH-1);
+  dispSPI.transfer(DISP_WIDTH-1);
 
   // Set row addresses
   sendDisplayCommand(ST77XX_RASET);
   dispSPI.transfer(0);
   dispSPI.transfer(0);
   dispSPI.transfer(0);
-  dispSPI.transfer(HEIGHT-1);
+  dispSPI.transfer(DISP_HEIGHT-1);
 
   // Initialize write to display RAM
   sendDisplayCommand(ST77XX_RAMWR);
