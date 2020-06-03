@@ -7,6 +7,16 @@
 #include "DotMGCore.h"
 #include <SPI.h>
 
+#define TIMER1         TC1
+#define TIMER_GCLK_ID1 TC1_GCLK_ID
+#define TIMER_IRQ1     TC1_IRQn
+#define TIMER1_HANDLER void TC1_Handler()
+
+#define TIMER2         TC2
+#define TIMER_GCLK_ID2 TC2_GCLK_ID
+#define TIMER_IRQ2     TC2_IRQn
+#define TIMER2_HANDLER void TC2_Handler()
+
 static uint8_t MADCTL = ST77XX_MADCTL_MV | ST77XX_MADCTL_MY;
 static bool inverted = false;
 
@@ -29,6 +39,7 @@ static SPIClass dispSPI(
 
 static void bootPins();
 static void bootDisplay();
+static void bootAudio();
 
 static void displayDataMode();
 static void displayCommandMode();
@@ -37,6 +48,9 @@ static void sendDisplayCommand(uint8_t command);
 static void beginDisplaySPI();
 static void setWriteRegion();
 
+static void timer_init(Tc *TCx, unsigned int clkId, IRQn_Type irqn);
+static void toggle(uint8_t chan) __attribute__((always_inline));
+
 
 DotMGCore::DotMGCore() { }
 
@@ -44,6 +58,7 @@ void DotMGCore::boot()
 {
   bootPins();
   bootDisplay();
+  bootAudio();
 }
 
 void bootPins()
@@ -56,8 +71,6 @@ void bootPins()
   pinMode(PIN_BUTTON_RIGHT, INPUT_PULLUP);
   pinMode(PIN_BUTTON_START, INPUT_PULLUP);
   pinMode(PIN_BUTTON_SELECT, INPUT_PULLUP);
-
-  pinMode(PIN_SPEAKER, OUTPUT);
 }
 
 void bootDisplay()
@@ -130,6 +143,14 @@ void bootDisplay()
   beginDisplaySPI();  // SPI ended by blank() call above, so begin again
   sendDisplayCommand(ST77XX_DISPON); //  Turn screen on
   delay(100);
+}
+
+void bootAudio()
+{
+  pinMode(PIN_SPEAKER, OUTPUT);
+  DotMGCore::enableAudio(true);
+  timer_init(TIMER1, TIMER_GCLK_ID1, TIMER_IRQ1);
+  timer_init(TIMER2, TIMER_GCLK_ID2, TIMER_IRQ2);
 }
 
 void DotMGCore::blit()
@@ -277,4 +298,139 @@ static void setWriteRegion()
 
   // Initialize write to display RAM
   sendDisplayCommand(ST77XX_RAMWR);
+}
+
+void timer_init(Tc *TCx, unsigned int clkId, IRQn_Type irqn)
+{
+  // Enable GCLK for timer
+  GCLK->PCHCTRL[clkId].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
+
+  // Disable counter
+  TCx->COUNT16.CTRLA.bit.ENABLE = 0;
+  while (TCx->COUNT16.SYNCBUSY.bit.ENABLE);
+
+  // Reset counter
+  TCx->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
+  while (TCx->COUNT16.SYNCBUSY.bit.ENABLE);
+  while (TCx->COUNT16.CTRLA.bit.SWRST);
+
+  // Set to match frequency mode
+  TCx->COUNT16.WAVE.reg = TC_WAVE_WAVEGEN_MFRQ;
+
+  // Set to 16-bit counter, clk/16 prescaler
+  TCx->COUNT16.CTRLA.reg = (
+    TC_CTRLA_MODE_COUNT16 |
+    TC_CTRLA_PRESCALER_DIV64
+  );
+  while (TCx->COUNT16.SYNCBUSY.bit.ENABLE);
+
+  // Configure interrupt request
+  NVIC_DisableIRQ(irqn);
+  NVIC_ClearPendingIRQ(irqn);
+  NVIC_SetPriority(irqn, 0);
+  NVIC_EnableIRQ(irqn);
+
+  // Enable interrupt request
+  TCx->COUNT16.INTENSET.bit.MC0 = 1;
+  while (TCx->COUNT16.SYNCBUSY.bit.ENABLE);
+}
+
+static void timer_tone(Tc *TCx, float freq)
+{
+  // Set counter based on desired frequency
+  TCx->COUNT16.CC[0].reg = (uint16_t)((F_CPU / 64 / 2 / freq) - 1);
+
+  // Enable counter
+  TCx->COUNT16.CTRLA.bit.ENABLE = 1;
+  while (TCx->COUNT16.SYNCBUSY.bit.ENABLE);
+}
+
+static void timer_stop(Tc *TCx)
+{
+  // Disable counter
+  TCx->COUNT16.CTRLA.bit.ENABLE = 0;
+  while (TCx->COUNT16.SYNCBUSY.bit.ENABLE);
+}
+
+static volatile int64_t toggleCount[2];
+static volatile bool wave[2];
+static Tc *timer[] = {TIMER1, TIMER2};
+
+void DotMGCore::enableAudio(bool enable)
+{
+  while (DAC->SYNCBUSY.bit.ENABLE || DAC->SYNCBUSY.bit.SWRST);
+  DAC->CTRLA.bit.ENABLE = 0;     // disable DAC
+
+  while (DAC->SYNCBUSY.bit.ENABLE || DAC->SYNCBUSY.bit.SWRST);
+  DAC->DACCTRL[DAC_CH_SPEAKER].bit.ENABLE = enable;  // enable/disable channel
+
+  while (DAC->SYNCBUSY.bit.ENABLE || DAC->SYNCBUSY.bit.SWRST);
+  DAC->CTRLA.bit.ENABLE = 1;     // enable DAC
+
+  if (enable)
+  {
+    while (!DAC_READY);
+    while (DAC_DATA_BUSY);
+    DAC->DATA[DAC_CH_SPEAKER].reg = 0;
+    delay(10);
+  }
+}
+
+bool DotMGCore::audioEnabled()
+{
+  return DAC->DACCTRL[DAC_CH_SPEAKER].bit.ENABLE;
+}
+
+void DotMGCore::tone(uint8_t chan, float freq)
+{
+  tone(chan, freq, 0);
+}
+
+void DotMGCore::tone(uint8_t chan, float freq, uint16_t dur)
+{
+  toggleCount[chan] = (dur > 0 ? freq * dur * 2 / 1000UL : -1LL);
+  timer_tone(timer[chan], freq);
+}
+
+void DotMGCore::stopTone(uint8_t chan)
+{
+  timer_stop(timer[chan]);
+  wave[chan] = false;
+}
+
+bool DotMGCore::tonePlaying(uint8_t chan)
+{
+  return timer[chan]->COUNT16.CTRLA.bit.ENABLE;
+}
+
+void toggle(uint8_t chan)
+{
+  if (toggleCount[chan] > 0)
+  {
+    toggleCount[chan]--;
+
+    if (!DotMGCore::audioEnabled())
+      return;
+
+    while (!DAC_READY);
+    while (DAC_DATA_BUSY);
+    wave[chan] = !wave[chan];
+    DAC->DATA[DAC_CH_SPEAKER].reg = (wave[TONE_CH1] ? 2047 : 0) + (wave[TONE_CH2] ? 2047 : 0);
+  }
+  else
+  {
+    DotMGCore::stopTone(chan);
+  }
+}
+
+TIMER1_HANDLER
+{
+  toggle(TONE_CH1);
+  TIMER1->COUNT16.INTFLAG.bit.MC0 = 1;  // Clear interrupt
+}
+
+TIMER2_HANDLER
+{
+  toggle(TONE_CH2);
+  TIMER2->COUNT16.INTFLAG.bit.MC0 = 1;  // Clear interrupt
 }

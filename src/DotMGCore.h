@@ -50,6 +50,12 @@
   #define HEIGHT      128
 #endif
 
+// Tone channels
+
+#define TONE_CH1 0
+#define TONE_CH2 1
+
+
 // ----- Pins -----
 
 #define PORT_ST_SEL_UP_RT   (&(PORT->Group[PORTA]))
@@ -268,7 +274,68 @@ class DotMGCore
      * `A_BUTTON`, `B_BUTTON`, `UP_BUTTON`, `DOWN_BUTTON`, `LEFT_BUTTON`,
      * `RIGHT_BUTTON`, `START_BUTTON`, `SELECT_BUTTON`
      */
-    uint8_t static buttonsState();
+    static uint8_t buttonsState();
+
+    /** \brief
+     * Enable or disable audio.
+     *
+     * \param enable Whether or not to enable audio.
+     *
+     * \details
+     * Audio is enabled by default at startup.
+     */
+    static void enableAudio(bool enable);
+
+    /** \brief
+     * Get whether or not audio is enabled.
+     *
+     * \details
+     * Audio is enabled by default at startup.
+     */
+    static bool audioEnabled();
+
+    /** \brief
+     * Play a tone continually, until replaced by a new tone or stopped.
+     *
+     * \param chan The channel on which to play the tone (`TONE_CH1` or `TONE_CH2`).
+     * \param freq The desired tone frequency, from 14 to 937,500 Hz.
+     *
+     * \details
+     * A tone is played indefinitely, until replaced by another tone or stopped
+     * using `stopTone()`.
+     */
+    static void tone(uint8_t chan, float freq);
+
+    /** \brief
+     * Play a tone for a given duration.
+     *
+     * \param chan The channel on which to play the tone (`TONE_CH1` or `TONE_CH2`).
+     * \param freq The desired tone frequency, from 14 to 937,500 Hz.
+     * \param dur The duration of the tone in milliseconds. A value of zero will play indefinitely.
+     *
+     * \details
+     * A tone is played for the specified duration, or until replaced by another
+     * tone or stopped using `stopTone()`.
+     */
+    static void tone(uint8_t chan, float freq, uint16_t dur);
+
+    /** \brief
+     * Stop a tone that is playing.
+     *
+     * \param chan The tone channel to stop (`TONE_CH1` or `TONE_CH2`).
+     *
+     * \details
+     * If a tone is playing it will be stopped. It's safe to call this function
+     * even if a tone isn't currently playing.
+     */
+    static void stopTone(uint8_t chan);
+
+    /** \brief
+     * Return whether or not a tone is playing.
+     *
+     * \param chan The tone channel to check (`TONE_CH1` or `TONE_CH2`).
+     */
+    static bool tonePlaying(uint8_t chan);
 
   protected:
     static void boot();
