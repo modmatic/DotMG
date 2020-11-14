@@ -1,6 +1,8 @@
 import os
 import sys
 
+# Works as of Pillow 7.2.0
+# Run: pip install Pillow to use PIL
 from PIL import Image
 
 
@@ -11,7 +13,9 @@ def to_4444_rgba(p):
     r = to_4_bits(p[0])
     g = to_4_bits(p[1])
     b = to_4_bits(p[2])
-    a = to_4_bits(p[3])
+    a = 0xFF
+    if len(p) >= 4:
+        a = to_4_bits(p[3])
     return (r << 12) | (g << 8) | (b << 4) | a
 
 def chunk(lst, n):
